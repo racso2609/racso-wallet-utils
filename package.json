@@ -1,0 +1,47 @@
+{
+  "name": "reactjs-vite-starter-pack",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "react-router dev",
+    "build": "react-router build",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@react-router/node": "7.16.0",
+    "@react-router/serve": "7.16.0",
+    "isbot": "5.1.28",
+    "jotai": "2.20.0",
+    "jotai-effect": "2.3.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-router": "7.16.0",
+    "swr": "2.3.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.26.0",
+    "@react-router/dev": "7.16.0",
+    "@tailwindcss/vite": "4.3.0",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@types/react": "19.2.3",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "4.5.0",
+    "eslint": "9.26.0",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "eslint-plugin-react-refresh": "0.4.20",
+    "globals": "16.0.0",
+    "jsdom": "29.1.1",
+    "tailwindcss": "4.3.0",
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.32.0",
+    "vite": "6.3.0",
+    "vitest": "3.2.0"
+  }
+}

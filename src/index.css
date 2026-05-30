@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------
+   Essentials: Strong Dim Theme
+   --------------------------------------------- */
+
+@theme {
+  /* Gray scale (12-step) */
+  --color-gray-0: hsl(220, 14%, 8%);
+  --color-gray-1: hsl(220, 13%, 11%);
+  --color-gray-2: hsl(220, 12%, 14%);
+  --color-gray-3: hsl(220, 11%, 17%);
+  --color-gray-4: hsl(220, 10%, 22%);
+  --color-gray-5: hsl(220, 10%, 28%);
+  --color-gray-6: hsl(220, 9%, 35%);
+  --color-gray-7: hsl(220, 8%, 45%);
+  --color-gray-8: hsl(220, 8%, 58%);
+  --color-gray-9: hsl(220, 10%, 72%);
+  --color-gray-10: hsl(220, 12%, 82%);
+  --color-gray-11: hsl(220, 14%, 92%);
+
+  /* Accent colors (muted) */
+  --color-primary: hsl(210, 55%, 48%);
+  --color-secondary: hsl(170, 35%, 42%);
+  --color-success: hsl(145, 35%, 42%);
+  --color-warning: hsl(38, 55%, 48%);
+  --color-danger: hsl(5, 55%, 50%);
+
+  /* Semantic tokens mapped to light palette by default */
+  --color-background: hsl(220, 18%, 96%);
+  --color-foreground: hsl(220, 14%, 20%);
+  --color-card: hsl(220, 14%, 90%);
+  --color-border: hsl(220, 11%, 78%);
+  --color-muted: hsl(220, 10%, 70%);
+}
+
+@theme dark {
+  --color-background: hsl(220, 14%, 8%);
+  --color-foreground: hsl(220, 10%, 72%);
+  --color-card: hsl(220, 12%, 14%);
+  --color-border: hsl(220, 10%, 22%);
+  --color-muted: hsl(220, 9%, 35%);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Arial,
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* --- Base element resets & dim theme defaults --- */
+
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    padding: 0;
+    margin: 0;
+    transition: opacity 150ms ease;
+  }
+
+  button:hover {
+    opacity: 0.9;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  span {
+    color: inherit;
+  }
+
+  p {
+    margin: 0 0 1rem 0;
+    line-height: 1.6;
+    color: var(--color-foreground);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0 0 0.75rem 0;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--color-foreground);
+  }
+
+  h1 {
+    font-size: 2.25rem;
+  }
+
+  h2 {
+    font-size: 1.875rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+  }
+
+  h5 {
+    font-size: 1.125rem;
+  }
+
+  h6 {
+    font-size: 1rem;
+  }
+}
