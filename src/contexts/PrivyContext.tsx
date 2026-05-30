@@ -1,5 +1,6 @@
 import { FC, PropsWithChildren } from 'react'
 import { PrivyProvider } from '@privy-io/react-auth'
+import { SmartWalletsProvider } from '@privy-io/react-auth/smart-wallets'
 
 export const PrivyAuthProvider: FC<PropsWithChildren> = ({ children }) => {
   return (
@@ -14,7 +15,9 @@ export const PrivyAuthProvider: FC<PropsWithChildren> = ({ children }) => {
         },
       }}
     >
-      {children}
+      <SmartWalletsProvider>
+        {children}
+      </SmartWalletsProvider>
     </PrivyProvider>
   )
 }

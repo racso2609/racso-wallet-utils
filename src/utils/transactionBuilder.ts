@@ -7,6 +7,11 @@ export interface EoaTransaction {
 
 export type SolanaTransaction = Uint8Array
 
+export interface BuiltSafeTransaction {
+  provider: 'safe'
+  txs: EoaTransaction[]
+}
+
 export interface BuiltEoaTransaction {
   provider: 'eoa'
   txs: EoaTransaction[]
@@ -17,7 +22,10 @@ export interface BuiltSolanaTransaction {
   txs: SolanaTransaction[]
 }
 
-export type BuiltTransaction = BuiltEoaTransaction | BuiltSolanaTransaction
+export type BuiltTransaction =
+  | BuiltSafeTransaction
+  | BuiltEoaTransaction
+  | BuiltSolanaTransaction
 
 export interface SendAction {
   type: 'send'
@@ -71,7 +79,7 @@ export function buildTransaction(actions: Action[]): BuiltTransaction {
   }
 
   return {
-    provider: 'eoa',
+    provider: 'safe',
     txs: actions.flatMap(buildSendTransactions),
   }
 }

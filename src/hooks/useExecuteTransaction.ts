@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useSendTransaction } from '@privy-io/react-auth'
+import { useSmartWallets } from '@privy-io/react-auth/smart-wallets'
 import {
   useSignAndSendTransaction,
   useWallets as useSolanaWallets,
@@ -7,6 +8,7 @@ import {
 import {
   type Action,
   type BuiltEoaTransaction,
+  type BuiltSafeTransaction,
   type BuiltSolanaTransaction,
   type BuiltTransaction,
   type EoaTransaction,
@@ -17,6 +19,7 @@ import {
 export type {
   Action,
   BuiltEoaTransaction,
+  BuiltSafeTransaction,
   BuiltSolanaTransaction,
   BuiltTransaction,
   EoaTransaction,
@@ -39,6 +42,7 @@ export const useExecuteTransaction = ({
   onError,
 }: UseExecuteTransactionOptions = {}) => {
   const sendTx = useSendTransaction()
+  const smartWallets = useSmartWallets()
   const signAndSend = useSignAndSendTransaction()
   const solanaWallets = useSolanaWallets()
   const [isLoading, setIsLoading] = useState(false)
@@ -46,6 +50,28 @@ export const useExecuteTransaction = ({
   const buildTx = useCallback(
     (actions: Action[]) => buildTransaction(actions),
     [],
+  )
+
+  const sendSafe = useCallback(
+    async (builtTx: BuiltSafeTransaction) => {
+      const client = smartWallets.client
+      if (!client) {
+        throw new Error('Smart wallet client not available')
+      }
+
+      const { txs } = builtTx
+      const results = []
+      for (const tx of txs) {
+        const hash = await client.sendTransaction({
+          to: tx.to as `0x${string}`,
+          value: tx.value,
+          data: (tx.data ?? '0x') as `0x${string}`,
+        })
+        results.push(hash)
+      }
+      return { hash: results[results.length - 1] }
+    },
+    [smartWallets],
   )
 
   const sendEoa = useCallback(
@@ -91,10 +117,20 @@ export const useExecuteTransaction = ({
     async (builtTx: BuiltTransaction) => {
       setIsLoading(true)
       try {
-        const result =
-          builtTx.provider === 'eoa'
-            ? await sendEoa(builtTx)
-            : await sendSolana(builtTx)
+        let result: { hash: string } | { signature: Uint8Array }
+        switch (builtTx.provider) {
+          case 'safe':
+            result = await sendSafe(builtTx)
+            break
+          case 'eoa':
+            result = await sendEoa(builtTx)
+            break
+          case 'solana':
+            result = await sendSolana(builtTx)
+            break
+          default:
+            throw new Error(`Unsupported provider: ${(builtTx as BuiltTransaction).provider}`)
+        }
         onSuccess?.(result)
         return result
       } catch (error) {
@@ -105,20 +141,30 @@ export const useExecuteTransaction = ({
         setIsLoading(false)
       }
     },
-    [sendEoa, sendSolana, onSuccess, onError],
+    [sendSafe, sendEoa, sendSolana, onSuccess, onError],
   )
 
   const getClient = useCallback(
-    (provider: 'eoa' | 'solana'): TransactionClient => ({
+    (provider: 'safe' | 'eoa' | 'solana'): TransactionClient => ({
       sendTransaction: async (builtTx: BuiltTransaction) => {
-        const result =
-          provider === 'eoa'
-            ? await sendEoa(builtTx as BuiltEoaTransaction)
-            : await sendSolana(builtTx as BuiltSolanaTransaction)
+        let result: { hash: string } | { signature: Uint8Array }
+        switch (provider) {
+          case 'safe':
+            result = await sendSafe(builtTx as BuiltSafeTransaction)
+            break
+          case 'eoa':
+            result = await sendEoa(builtTx as BuiltEoaTransaction)
+            break
+          case 'solana':
+            result = await sendSolana(builtTx as BuiltSolanaTransaction)
+            break
+          default:
+            throw new Error(`Unsupported provider: ${String(provider)}`)
+        }
         return result
       },
     }),
-    [sendEoa, sendSolana],
+    [sendSafe, sendEoa, sendSolana],
   )
 
   return { getClient, executeTransaction, buildTransaction: buildTx, isLoading }
