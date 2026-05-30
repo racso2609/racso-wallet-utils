@@ -1,5 +1,6 @@
 import { FC, useEffect } from "react";
 import { useThemeContext } from "../../src/contexts/ThemeContext";
+import LoginButton from "../../src/components/LoginButton";
 
 const Home: FC = () => {
   const { theme, setTheme } = useThemeContext();
@@ -22,15 +23,18 @@ const Home: FC = () => {
         React Router v7 Framework mode + Vite starter with a strong dim theme,
         Jotai state, and Tailwind CSS.
       </p>
-      <button
-        type="button"
-        onClick={() => {
-          setTheme(theme === "dark" ? "light" : "dark");
-        }}
-        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-      >
-        Toggle Theme
-      </button>
+      <div className="flex items-center gap-4">
+        <LoginButton />
+        <button
+          type="button"
+          onClick={() => {
+            setTheme(theme === "dark" ? "light" : "dark");
+          }}
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+        >
+          Toggle Theme
+        </button>
+      </div>
     </main>
   );
 };

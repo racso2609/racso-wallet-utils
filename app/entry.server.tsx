@@ -1,21 +1,57 @@
-import { renderToString } from "react-dom/server";
-import type { EntryContext } from "react-router";
-import { ServerRouter } from "react-router";
+import { PassThrough } from 'stream'
+import { renderToPipeableStream } from 'react-dom/server'
+import type { EntryContext } from 'react-router'
+import { ServerRouter } from 'react-router'
 
 export default function handleRequest(
-  _request: Request,
+  request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
   routerContext: EntryContext,
 ) {
-  const body = renderToString(
-    <ServerRouter context={routerContext} url={_request.url} />,
-  );
+  return new Promise<Response>((resolve, reject) => {
+    const { pipe, abort } = renderToPipeableStream(
+      <ServerRouter context={routerContext} url={request.url} />,
+      {
+        onShellError(error: unknown) {
+          reject(
+            error instanceof Error ? error : new Error(String(error)),
+          )
+        },
+        onError(error: unknown) {
+          console.error(error)
+        },
+      },
+    )
 
-  responseHeaders.set("Content-Type", "text/html");
+    const body = new PassThrough()
 
-  return new Response("<!DOCTYPE html>" + body, {
-    headers: responseHeaders,
-    status: responseStatusCode,
-  });
+    responseHeaders.set('Content-Type', 'text/html')
+
+    const stream = new ReadableStream({
+      start(controller) {
+        body.on('data', (chunk: Buffer) => {
+          controller.enqueue(new Uint8Array(chunk))
+        })
+        body.on('end', () => {
+          controller.close()
+        })
+        body.on('error', (err: Error) => {
+          controller.error(err)
+        })
+      },
+      cancel() {
+        abort()
+      },
+    })
+
+    pipe(body)
+
+    resolve(
+      new Response(stream, {
+        headers: responseHeaders,
+        status: responseStatusCode,
+      }),
+    )
+  })
 }
