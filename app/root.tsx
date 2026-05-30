@@ -1,6 +1,7 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
-import ThemeProvider from "../src/contexts/ThemeContext";
-import "../src/index.css";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
+import PrivyAuthProvider from '../src/contexts/PrivyContext'
+import ThemeProvider from '../src/contexts/ThemeContext'
+import '../src/index.css'
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,15 +18,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
-  );
+  )
 }
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
-        <Outlet />
-      </div>
-    </ThemeProvider>
-  );
+    <PrivyAuthProvider>
+      <ThemeProvider>
+        <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
+          <Outlet />
+        </div>
+      </ThemeProvider>
+    </PrivyAuthProvider>
+  )
 }

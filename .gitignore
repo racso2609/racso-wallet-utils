@@ -32,3 +32,5 @@ coverage
 # React Router / Vite build outputs
 build
 .react-router
+
+.env
