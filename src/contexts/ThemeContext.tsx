@@ -7,12 +7,7 @@ interface ThemeContextType {
   setTheme: (theme: ThemeOptions) => void
 }
 
-const ThemeContext = createContext<ThemeContextType>({
-  theme: 'dark',
-  setTheme: () => {
-    throw new Error('ThemeProvider not found')
-  },
-})
+const ThemeContext = createContext<ThemeContextType | null>(null)
 
 const ThemeProvider: FC<PropsWithChildren> = ({ children }) => {
   const [theme, setTheme] = useAtom(themeAtom)

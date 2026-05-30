@@ -24,7 +24,9 @@ const Home: FC = () => {
       </p>
       <button
         type="button"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        onClick={() => {
+          setTheme(theme === "dark" ? "light" : "dark");
+        }}
         className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
       >
         Toggle Theme

@@ -1,4 +1,4 @@
-type Listener = (...args: any[]) => void
+type Listener = (...args: unknown[]) => void
 
 class EventEmitter {
   private events: Map<string, Listener[]>
@@ -8,10 +8,12 @@ class EventEmitter {
   }
 
   on(event: string, listener: Listener): void {
-    if (!this.events.has(event)) {
-      this.events.set(event, [])
+    const listeners = this.events.get(event)
+    if (listeners) {
+      listeners.push(listener)
+    } else {
+      this.events.set(event, [listener])
     }
-    this.events.get(event)!.push(listener)
   }
 
   off(event: string, listener: Listener): void {
@@ -26,10 +28,12 @@ class EventEmitter {
     }
   }
 
-  emit(event: string, ...args: any[]): void {
+  emit(event: string, ...args: unknown[]): void {
     const listeners = this.events.get(event)
     if (!listeners) return
-    listeners.forEach((listener) => listener(...args))
+    listeners.forEach((listener) => {
+      listener(...args)
+    })
   }
 }
 

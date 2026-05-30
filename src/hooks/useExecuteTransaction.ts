@@ -1,21 +1,26 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useSendTransaction } from '@privy-io/react-auth'
 import {
   useSignAndSendTransaction,
   useWallets as useSolanaWallets,
 } from '@privy-io/react-auth/solana'
+import {
+  type Action,
+  type BuiltEoaTransaction,
+  type BuiltSolanaTransaction,
+  type BuiltTransaction,
+  type EoaTransaction,
+  type SolanaTransaction,
+  buildTransaction,
+} from '../utils/transactionBuilder'
 
-export interface EoaTransaction {
-  to: string
-  value: bigint
-  data?: string
-}
-
-export type SolanaTransaction = Uint8Array
-
-export interface BuiltTransaction {
-  provider: 'eoa' | 'solana'
-  txs: EoaTransaction[] | SolanaTransaction
+export type {
+  Action,
+  BuiltEoaTransaction,
+  BuiltSolanaTransaction,
+  BuiltTransaction,
+  EoaTransaction,
+  SolanaTransaction,
 }
 
 export interface TransactionClient {
@@ -33,90 +38,90 @@ export const useExecuteTransaction = ({
   onSuccess,
   onError,
 }: UseExecuteTransactionOptions = {}) => {
-  const { sendTransaction: privySendTx } = useSendTransaction()
-  const { signAndSendTransaction: privySignAndSend } = useSignAndSendTransaction()
-  const { wallets: solanaWallets } = useSolanaWallets()
+  const sendTx = useSendTransaction()
+  const signAndSend = useSignAndSendTransaction()
+  const solanaWallets = useSolanaWallets()
   const [isLoading, setIsLoading] = useState(false)
 
-  const buildTransaction = useMemo(
-    (): BuiltTransaction => ({
-      provider: 'eoa',
-      txs: [
-        {
-          to: '0x0000000000000000000000000000000000000000',
-          value: 0n,
-          data: '0x',
-        },
-      ],
-    }),
+  const buildTx = useCallback(
+    (actions: Action[]) => buildTransaction(actions),
     [],
   )
 
-  const getClient = useCallback(
-    (provider: 'eoa' | 'solana'): TransactionClient => {
-      return {
-        sendTransaction: async (builtTx: BuiltTransaction) => {
-          setIsLoading(true)
-          try {
-            if (provider === 'eoa') {
-              const txs = builtTx.txs as EoaTransaction[]
-              const tx = txs[0]
-              if (!tx) {
-                throw new Error('No EOA transactions to execute')
-              }
-
-              const result = await privySendTx({
-                to: tx.to,
-                value: tx.value,
-                data: tx.data,
-              })
-
-              const output = { hash: result.hash }
-              onSuccess?.(output)
-              return output
-            }
-
-            if (provider === 'solana') {
-              const tx = builtTx.txs as SolanaTransaction
-              const wallet = solanaWallets[0]
-              if (!wallet) {
-                throw new Error('No Solana wallet connected')
-              }
-
-              const result = await privySignAndSend({
-                transaction: tx,
-                wallet,
-              })
-
-              const output = { signature: result.signature }
-              onSuccess?.(output)
-              return output
-            }
-
-            throw new Error(`Unsupported provider: ${provider}`)
-          } catch (error) {
-            const err =
-              error instanceof Error ? error : new Error(String(error))
-            onError?.(err)
-            throw err
-          } finally {
-            setIsLoading(false)
-          }
-        },
+  const sendEoa = useCallback(
+    async (builtTx: BuiltEoaTransaction) => {
+      const { txs } = builtTx
+      const results = []
+      for (const tx of txs) {
+        const result = await sendTx.sendTransaction({
+          to: tx.to,
+          value: tx.value,
+          data: tx.data,
+          chainId: tx.chainId,
+        })
+        results.push(result)
       }
+      return { hash: results[results.length - 1].hash }
     },
-    [privySendTx, privySignAndSend, solanaWallets, onSuccess, onError],
+    [sendTx],
+  )
+
+  const sendSolana = useCallback(
+    async (builtTx: BuiltSolanaTransaction) => {
+      const { txs } = builtTx
+      const wallets = solanaWallets.wallets
+      if (wallets.length === 0) {
+        throw new Error('No Solana wallet connected')
+      }
+      const wallet = wallets[0]
+      const results = []
+      for (const tx of txs) {
+        const result = await signAndSend.signAndSendTransaction({
+          transaction: tx,
+          wallet,
+        })
+        results.push(result)
+      }
+      return { signature: results[results.length - 1].signature }
+    },
+    [signAndSend, solanaWallets],
   )
 
   const executeTransaction = useCallback(
     async (builtTx: BuiltTransaction) => {
-      const client = getClient(builtTx.provider)
-      return client.sendTransaction(builtTx)
+      setIsLoading(true)
+      try {
+        const result =
+          builtTx.provider === 'eoa'
+            ? await sendEoa(builtTx)
+            : await sendSolana(builtTx)
+        onSuccess?.(result)
+        return result
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error))
+        onError?.(err)
+        throw err
+      } finally {
+        setIsLoading(false)
+      }
     },
-    [getClient],
+    [sendEoa, sendSolana, onSuccess, onError],
   )
 
-  return { getClient, executeTransaction, buildTransaction, isLoading }
+  const getClient = useCallback(
+    (provider: 'eoa' | 'solana'): TransactionClient => ({
+      sendTransaction: async (builtTx: BuiltTransaction) => {
+        const result =
+          provider === 'eoa'
+            ? await sendEoa(builtTx as BuiltEoaTransaction)
+            : await sendSolana(builtTx as BuiltSolanaTransaction)
+        return result
+      },
+    }),
+    [sendEoa, sendSolana],
+  )
+
+  return { getClient, executeTransaction, buildTransaction: buildTx, isLoading }
 }
 
 export default useExecuteTransaction
