@@ -1,18 +1,14 @@
 import { FC } from 'react'
 import { useNavigate } from 'react-router'
-import type { EtfProduct } from '../types/etf'
+import type { EtfWithSupportedAddresses } from '../hooks/useStock'
 
 interface EtfItemProps {
-  product: EtfProduct
-  onClick?: (product: EtfProduct) => void
+  product: EtfWithSupportedAddresses
+  onClick?: (product: EtfWithSupportedAddresses) => void
 }
 
 export const EtfItem: FC<EtfItemProps> = ({ product, onClick }) => {
   const navigate = useNavigate()
-
-  const activeChains = Object.entries(product.addresses)
-    .filter(([, address]) => address !== null)
-    .map(([chain]) => chain)
 
   return (
     <button
@@ -38,7 +34,7 @@ export const EtfItem: FC<EtfItemProps> = ({ product, onClick }) => {
           </span>
         </div>
         <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
-          {activeChains.map((chain) => (
+          {product.supportedAddresses.map(([chain]) => (
             <span
               key={chain}
               className="text-[10px] capitalize text-muted"

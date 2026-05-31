@@ -1,14 +1,15 @@
-import { FC } from "react";
-import { useParams, useNavigate } from "react-router";
-import { XSTOCKS_PRODUCTS } from "../../src/utils/xstocksProducts";
-import CopyButton from "../../src/components/CopyButton";
-import Icon from "../../src/components/Icon";
+import { FC } from 'react'
+import { useParams, useNavigate } from 'react-router'
+import { XSTOCKS_PRODUCTS } from '../../src/utils/xstocksProducts'
+import { ETF_SUPPORTED_CHAINS } from '../../src/types/etf'
+import CopyButton from '../../src/components/CopyButton'
+import Icon from '../../src/components/Icon'
 
 const EtfDetail: FC = () => {
-  const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
+  const { slug } = useParams<{ slug: string }>()
+  const navigate = useNavigate()
 
-  const product = XSTOCKS_PRODUCTS.find((p) => p.slug === slug);
+  const product = XSTOCKS_PRODUCTS.find((p) => p.slug === slug)
 
   if (!product) {
     return (
@@ -20,7 +21,7 @@ const EtfDetail: FC = () => {
           </p>
           <button
             onClick={() => {
-              void navigate("/");
+              void navigate('/')
             }}
             className="mt-6 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
@@ -28,12 +29,13 @@ const EtfDetail: FC = () => {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
-  const activeAddresses = Object.entries(product.addresses).filter(
-    ([, address]) => address !== null,
-  ) as [string, string][];
+  const supportedAddresses = ETF_SUPPORTED_CHAINS
+    .map((chain) => [chain, product.addresses[chain]] as const)
+    .filter(([, address]) => address !== null)
+    .map(([chain, address]) => [chain, address] as [string, string])
 
   return (
     <div className="flex flex-1 flex-col px-6 py-8">
@@ -41,7 +43,7 @@ const EtfDetail: FC = () => {
         {/* Back */}
         <button
           onClick={() => {
-            void navigate(-1);
+            void navigate(-1)
           }}
           className="mb-6 flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground"
         >
@@ -67,8 +69,8 @@ const EtfDetail: FC = () => {
                 </span>
               </div>
               <p className="mt-1 text-sm text-muted">
-                {activeAddresses.length} chain
-                {activeAddresses.length === 1 ? "" : "s"} available
+                {supportedAddresses.length} chain
+                {supportedAddresses.length === 1 ? '' : 's'} available
               </p>
             </div>
           </div>
@@ -79,7 +81,7 @@ const EtfDetail: FC = () => {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
             Contract Addresses
           </h2>
-          {activeAddresses.map(([chain, address]) => (
+          {supportedAddresses.map(([chain, address]) => (
             <div
               key={chain}
               className="flex items-center justify-between gap-4 rounded-xl border border-border/50 bg-card/60 px-4 py-3"
@@ -98,7 +100,7 @@ const EtfDetail: FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default EtfDetail;
+export default EtfDetail
