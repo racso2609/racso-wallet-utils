@@ -10,6 +10,26 @@ import type {
   TokenBalance,
 } from './swap.types'
 
+const EXCLUDED_SWAP_SOURCES = [
+  'dflow',
+  'wsol',
+  'camelot',
+  'open-ocean',
+  'odos',
+  'okxSvm',
+  'okxEvm',
+  'bebopPmm',
+  'bebopJam',
+  'cetus',
+  'rooster',
+  'eisen',
+  'okxSui',
+  'fabric',
+  'hyperswap',
+  'eisen-v2',
+  'fynd',
+]
+
 export class SwapService {
   private static instance: SwapService | null = null
 
@@ -37,12 +57,16 @@ export class SwapService {
         tokenFrom: request.data.metadata.currencyIn,
         tokenTo: request.data.metadata.currencyOut,
       },
-      txs: [...request.data.inTxs, ...request.data.outTxs].map((tx) => ({
-        to: tx.data?.to as Address,
-        data: tx.data?.data as Hash,
-        value: BigInt(tx.data?.value ?? '0'),
-        hash: tx.hash as Hash,
-      })),
+      txs: [...request.data.inTxs, ...request.data.outTxs]
+        .filter((tx): tx is typeof tx & { data: NonNullable<typeof tx.data> } =>
+          Boolean(tx.data?.to && tx.data.data),
+        )
+        .map((tx) => ({
+          to: tx.data.to as Address,
+          data: tx.data.data as Hash,
+          value: BigInt(tx.data.value),
+          hash: tx.hash as Hash,
+        })),
     }))
   }
 
@@ -97,36 +121,20 @@ export class SwapService {
         txs: data.txs?.map((tx) => ({ ...tx, value: tx.value.toString() })),
         refundTo: data.from,
         slippageTolerance: 200,
-        excludedSwapSources: [
-          'dflow',
-          'wsol',
-          'camelot',
-          'open-ocean',
-          'odos',
-          'okxSvm',
-          'okxEvm',
-          'bebopPmm',
-          'bebopJam',
-          'cetus',
-          'rooster',
-          'eisen',
-          'okxSui',
-          'fabric',
-          'hyperswap',
-          'eisen-v2',
-          'fynd',
-        ],
+        excludedSwapSources: EXCLUDED_SWAP_SOURCES,
       }),
     })
 
     const fee = Object.keys(response.fees).reduce<TokenBalance>(
       (acc, key) => {
-        const value = response.fees[key] as CurrencyGasTopup
+        const raw = response.fees[key]
+        const usd =
+          raw && typeof raw === 'object' && 'amountUsd' in raw
+            ? Number((raw as CurrencyGasTopup).amountUsd)
+            : 0
 
         return {
-          formatted: (
-            Number(acc.formatted) + Number(value.amountUsd)
-          ).toString(),
+          formatted: (Number(acc.formatted) + usd).toString(),
           currency: 'USD',
         }
       },
@@ -148,7 +156,7 @@ export class SwapService {
       amountToReceive: formatUnits(
         BigInt(response.details.currencyOut.minimumAmount),
         response.details.currencyOut.currency.decimals,
-      ).toString(),
+      ),
       amountToReceiveRaw: response.details.currencyOut.minimumAmount,
       slippage:
         response.details.slippageTolerance?.destination?.percent ?? '1',

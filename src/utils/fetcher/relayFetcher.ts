@@ -14,5 +14,9 @@ export async function relayFetcher<T>(
     )
   }
 
-  return response.json() as Promise<T>
+  try {
+    return (await response.json()) as T
+  } catch {
+    throw new Error('Relay API returned invalid JSON')
+  }
 }
