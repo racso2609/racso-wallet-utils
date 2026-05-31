@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { XSTOCKS_PRODUCTS } from '../../src/utils/xstocksProducts'
 import { ETF_SUPPORTED_CHAINS } from '../../src/types/etf'
@@ -6,6 +6,7 @@ import { getFirstSupportedChain, toTokenInfo } from '../../src/utils/stocks'
 import CopyButton from '../../src/components/CopyButton'
 import SwapPanel from '../../src/components/SwapPanel'
 import Icon from '../../src/components/Icon'
+import type { TokenInfo } from '../../src/types/token'
 
 const EtfDetail: FC = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -17,6 +18,12 @@ const EtfDetail: FC = () => {
   const [selectedChain, setSelectedChain] = useState<string>(
     product ? getFirstSupportedChain(product) : '',
   )
+
+  const [fromToken, setFromToken] = useState<TokenInfo | undefined>(undefined)
+
+  const handleFromTokenChange = useCallback((token: TokenInfo) => {
+    setFromToken(token)
+  }, [])
 
   if (!product) {
     return (
@@ -143,11 +150,11 @@ const EtfDetail: FC = () => {
           {/* Right: Swap Panel */}
           <div className="flex justify-center lg:justify-end">
             <SwapPanel
+              fromToken={fromToken}
               toToken={etfToken ?? undefined}
+              fromBalance="0.00"
               toBalance="0.00"
-              onToTokenClick={() => {
-                /* TODO: open token selector */
-              }}
+              onFromTokenChange={handleFromTokenChange}
             />
           </div>
         </div>

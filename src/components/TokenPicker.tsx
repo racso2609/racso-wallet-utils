@@ -46,7 +46,10 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   }, [tokens, search, chainFilter]);
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
       <div
         className="relative flex max-h-[80vh] w-full max-w-sm flex-col rounded-3xl border border-border/60 bg-card p-5 shadow-2xl"
         onClick={(e) => {
@@ -151,9 +154,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
                       {getChainName(token.chainId)}
                     </span>
                   </div>
-                  <p className="truncate text-xs text-muted">
-                    {token.name}
-                  </p>
+                  <p className="truncate text-xs text-muted">{token.name}</p>
                 </div>
                 {selectedToken?.address === token.address && (
                   <Icon

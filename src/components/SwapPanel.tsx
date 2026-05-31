@@ -10,6 +10,8 @@ interface SwapPanelProps {
   toBalance?: string;
   onFromTokenClick?: () => void;
   onToTokenClick?: () => void;
+  onFromTokenChange?: (token: TokenInfo) => void;
+  onToTokenChange?: (token: TokenInfo) => void;
   onSwap?: () => void;
 }
 
@@ -20,6 +22,8 @@ export const SwapPanel: FC<SwapPanelProps> = ({
   toBalance = "0.00",
   onFromTokenClick,
   onToTokenClick,
+  onFromTokenChange,
+  onToTokenChange,
   onSwap,
 }) => {
   const [swapped, setSwapped] = useState(false);
@@ -48,6 +52,7 @@ export const SwapPanel: FC<SwapPanelProps> = ({
         usdRate="1.00"
         onAmountChange={handleFromChange}
         onTokenClick={swapped ? onToTokenClick : onFromTokenClick}
+        onTokenChange={swapped ? onToTokenChange : onFromTokenChange}
       />
 
       {/* Swap button */}
@@ -69,6 +74,7 @@ export const SwapPanel: FC<SwapPanelProps> = ({
         balance={swapped ? fromBalance : toBalance}
         placeholder={fromAmount || "0"}
         onTokenClick={swapped ? onFromTokenClick : onToTokenClick}
+        onTokenChange={swapped ? onFromTokenChange : onToTokenChange}
       />
 
       {/* Action button */}

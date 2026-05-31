@@ -52,9 +52,11 @@ export const TokenInput: FC<TokenInputProps> = ({
   }, [balance, onAmountChange])
 
   const openPicker = useCallback(() => {
+    if (onTokenChange) {
+      setShowPicker(true)
+    }
     onTokenClick?.()
-    setShowPicker(true)
-  }, [onTokenClick])
+  }, [onTokenClick, onTokenChange])
 
   const handleSelectToken = useCallback(
     (selectedToken: TokenInfo) => {
