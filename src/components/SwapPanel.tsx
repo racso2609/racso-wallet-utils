@@ -15,17 +15,29 @@ interface SwapPanelProps {
 }
 
 export const SwapPanel: FC<SwapPanelProps> = ({
-  fromToken,
-  toToken,
-  fromChainName,
-  toChainName,
+  fromToken: initialFromToken,
+  toToken: initialToToken,
+  fromChainName: initialFromChainName,
+  toChainName: initialToChainName,
   fromBalance = '0.00',
   toBalance = '0.00',
   onFromTokenClick,
   onToTokenClick,
   onSwap,
 }) => {
+  const [swapped, setSwapped] = useState(false)
   const [fromAmount, setFromAmount] = useState('')
+
+  const fromToken = swapped ? initialToToken : initialFromToken
+  const toToken = swapped ? initialFromToken : initialToToken
+  const fromChainName = swapped ? initialToChainName : initialFromChainName
+  const toChainName = swapped ? initialFromChainName : initialToChainName
+
+  const handleToggle = useCallback(() => {
+    setSwapped((prev) => !prev)
+    setFromAmount('')
+    onSwap?.()
+  }, [onSwap])
 
   const handleFromChange = useCallback((val: string) => {
     setFromAmount(val)
@@ -38,18 +50,19 @@ export const SwapPanel: FC<SwapPanelProps> = ({
         label="Sell"
         token={fromToken}
         chainName={fromChainName}
-        balance={fromBalance}
+        balance={swapped ? toBalance : fromBalance}
         usdRate="1.00"
         onAmountChange={handleFromChange}
-        onTokenClick={onFromTokenClick}
+        onTokenClick={swapped ? onToTokenClick : onFromTokenClick}
       />
 
       {/* Swap button */}
       <div className="relative z-10 -my-3 flex justify-center">
         <button
           type="button"
-          onClick={onSwap}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card shadow-md transition-all hover:scale-110 hover:border-primary/50 hover:shadow-lg active:scale-95"
+          onClick={handleToggle}
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card shadow-md transition-all hover:scale-110 hover:border-primary/50 hover:shadow-lg hover:rotate-180 active:scale-95"
+          title="Swap tokens"
         >
           <svg
             width="16"
@@ -73,9 +86,9 @@ export const SwapPanel: FC<SwapPanelProps> = ({
         label="Buy"
         token={toToken}
         chainName={toChainName}
-        balance={toBalance}
+        balance={swapped ? fromBalance : toBalance}
         placeholder={fromAmount || '0'}
-        onTokenClick={onToTokenClick}
+        onTokenClick={swapped ? onFromTokenClick : onToTokenClick}
       />
 
       {/* Action button */}
