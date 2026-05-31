@@ -1,42 +1,58 @@
-import { FC, useCallback, useState } from 'react'
-import { usePrivy, useLogin, useLogout } from '@privy-io/react-auth'
-import CopyButton from './CopyButton'
-import ChainSelectorModal from './ChainSelectorModal'
-import Dropdown from './Dropdown'
-import Icon from './Icon'
+import { FC, useCallback, useState } from "react";
+import { usePrivy, useLogin, useLogout } from "@privy-io/react-auth";
+import CopyButton from "./CopyButton";
+import ChainSelectorModal from "./ChainSelectorModal";
+import Dropdown from "./Dropdown";
+import Icon from "./Icon";
+
+const typeToLabel = (connectorType?: string) => {
+  if (!connectorType) return "SmartWallet";
+  return connectorType === "ethereum" ? "Wallet" : "Solana";
+};
 
 export const WalletDropdown: FC = () => {
-  const { ready, authenticated, user } = usePrivy()
-  const { login } = useLogin()
-  const { logout } = useLogout()
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedAddress, setSelectedAddress] = useState<string>('')
+  const { ready, authenticated, user } = usePrivy();
+  const { login } = useLogin();
+  const { logout } = useLogout();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  console.log("User data in WalletDropdown:", { user, authenticated });
 
-  const wallets = authenticated && user
-    ? [
-        user.wallet?.address,
-        user.smartWallet?.address,
-      ].filter(Boolean) as string[]
-    : []
+  const wallets =
+    authenticated && user
+      ? user.linkedAccounts
+          .filter(
+            (a) =>
+              (a.type === "wallet" || a.type === "smart_wallet") &&
+              ("chainType" in a || "smartWalletType" in a),
+          )
+          .map((a) => {
+            return {
+              address: a.address,
+              // @ts-expect-error - the types for linked accounts are a bit inconsistent, so we need to assert here
+              label: typeToLabel(a.chainType as string),
+            };
+          })
+      : [];
 
   const primaryLabel =
     authenticated && user
-      ? (typeof user.email === 'string'
-          ? user.email
-          : user.email?.address ?? user.wallet?.address ?? 'User')
-      : null
+      ? typeof user.email === "string"
+        ? user.email
+        : (user.email?.address ?? user.wallet?.address ?? "User")
+      : null;
 
   const handleOpenModal = useCallback((address: string) => {
-    setSelectedAddress(address)
-    setModalOpen(true)
-  }, [])
+    setSelectedAddress(address);
+    setModalOpen(true);
+  }, []);
 
   const handleCloseModal = useCallback(() => {
-    setModalOpen(false)
-  }, [])
+    setModalOpen(false);
+  }, []);
 
   if (!ready) {
-    return <span className="text-xs text-muted-foreground">Loading…</span>
+    return <span className="text-xs text-muted-foreground">Loading…</span>;
   }
 
   if (authenticated && primaryLabel) {
@@ -57,14 +73,14 @@ export const WalletDropdown: FC = () => {
         >
           <div className="flex flex-col gap-3">
             {wallets.length > 0 ? (
-              wallets.map((address, index) => (
+              wallets.map(({ address, label }, index) => (
                 <div
                   key={`${address}-${String(index)}`}
                   className="flex flex-col gap-2 rounded-lg border border-border/50 bg-background/50 p-3"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {index === 0 ? 'Wallet' : 'Smart Wallet'}
+                      {label}
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-2">
@@ -76,7 +92,7 @@ export const WalletDropdown: FC = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          handleOpenModal(address)
+                          handleOpenModal(address);
                         }}
                         className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         aria-label="View on explorer"
@@ -98,7 +114,7 @@ export const WalletDropdown: FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  logout().catch(console.error)
+                  logout().catch(console.error);
                 }}
                 className="w-full rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
               >
@@ -114,20 +130,20 @@ export const WalletDropdown: FC = () => {
           onClose={handleCloseModal}
         />
       </>
-    )
+    );
   }
 
   return (
     <button
       type="button"
       onClick={() => {
-        login()
+        login();
       }}
       className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
     >
       Log in
     </button>
-  )
-}
+  );
+};
 
-export default WalletDropdown
+export default WalletDropdown;

@@ -27,14 +27,6 @@ export const Dropdown: FC<DropdownProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      console.log(
-        "Document click:",
-        event.target,
-        "Dropdown ref:",
-        ref.current,
-        "Composed",
-        event.composedPath(),
-      );
       // cehck also if the click in on a children of the dropdown
       if (
         ref.current &&
