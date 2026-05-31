@@ -1,64 +1,71 @@
-import { FC, useCallback, useMemo, useState } from 'react'
-import { useAtom } from 'jotai'
-import { useParams, useNavigate } from 'react-router'
-import { XSTOCKS_PRODUCTS } from '../../src/utils/xstocksProducts'
-import { ETF_SUPPORTED_CHAINS } from '../../src/types/etf'
-import { getFirstSupportedChain, toTokenInfo } from '../../src/utils/stocks'
-import CopyButton from '../../src/components/CopyButton'
-import SwapPanel from '../../src/components/SwapPanel'
-import Icon from '../../src/components/Icon'
-import { useSwapQuote } from '../../src/hooks/useSwapQuote'
-import { activeWalletAtom } from '../../src/storages/activeWallet'
-import { RELAY_CHAIN_MAP } from '../../src/config/chains'
-import type { TokenInfo } from '../../src/types/token'
+import { FC, useCallback, useMemo, useState } from "react";
+import { useAtom } from "jotai";
+import { useParams, useNavigate } from "react-router";
+import { XSTOCKS_PRODUCTS } from "../../src/utils/xstocksProducts";
+import { ETF_SUPPORTED_CHAINS } from "../../src/types/etf";
+import { getFirstSupportedChain, toTokenInfo } from "../../src/utils/stocks";
+import CopyButton from "../../src/components/CopyButton";
+import SwapPanel from "../../src/components/SwapPanel";
+import Icon from "../../src/components/Icon";
+import { useSwapQuote } from "../../src/hooks/useSwapQuote";
+import { activeWalletAtom, walletsAtom } from "../../src/storages/activeWallet";
+import { RELAY_CHAIN_MAP } from "../../src/config/chains";
+import type { TokenInfo } from "../../src/types/token";
 
 function toRelayChainId(chainId: number): number {
-  return RELAY_CHAIN_MAP[chainId] ?? chainId
+  return RELAY_CHAIN_MAP[chainId] ?? chainId;
 }
 
 const EtfDetail: FC = () => {
-  const { slug } = useParams<{ slug: string }>()
-  const navigate = useNavigate()
-  const [activeWallet] = useAtom(activeWalletAtom)
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const [activeWallet] = useAtom(activeWalletAtom);
+  const [wallets] = useAtom(walletsAtom);
 
-  const product = XSTOCKS_PRODUCTS.find((p) => p.slug === slug)
+  const product = XSTOCKS_PRODUCTS.find((p) => p.slug === slug);
 
   // Compute etfToken early so hooks below can reference it
-  const firstChain = product ? getFirstSupportedChain(product) : ''
-  const [selectedChain, setSelectedChain] = useState<string>(firstChain)
+  const firstChain = product ? getFirstSupportedChain(product) : "";
+  const [selectedChain, setSelectedChain] = useState<string>(firstChain);
 
   const selectedAddress = product
-    ? (product.addresses[selectedChain as keyof typeof product.addresses] ?? '')
-    : ''
+    ? (product.addresses[selectedChain as keyof typeof product.addresses] ?? "")
+    : "";
 
-  const etfToken = product && selectedAddress
-    ? toTokenInfo(product, selectedAddress, selectedChain)
-    : null
+  const etfToken =
+    product && selectedAddress
+      ? toTokenInfo(product, selectedAddress, selectedChain)
+      : null;
 
-  const [fromToken, setFromToken] = useState<TokenInfo | undefined>(undefined)
-  const [fromAmount, setFromAmount] = useState('')
+  const [fromToken, setFromToken] = useState<TokenInfo | undefined>(undefined);
+  const [fromAmount, setFromAmount] = useState("");
 
   const swapParams = useMemo(() => {
-    if (!fromToken || !fromAmount || !activeWallet || !etfToken) return null
+    if (!fromToken || !fromAmount || !etfToken) return null;
+
+    const targetChainType = Number(etfToken.chainId) === 101 ? 'solana' : 'evm'
+    const fromAddr = wallets.find((w) => w.chainType === targetChainType)?.address ?? activeWallet
+    if (!fromAddr) return null
+
     return {
       tokenFrom: fromToken.address,
       tokenTo: etfToken.address,
       amount: fromAmount,
       chainIdFrom: toRelayChainId(Number(fromToken.chainId)),
       chainIdTo: toRelayChainId(Number(etfToken.chainId)),
-      from: activeWallet,
-    }
-  }, [fromToken, fromAmount, activeWallet, etfToken])
+      from: fromAddr,
+    };
+  }, [fromToken, fromAmount, activeWallet, etfToken, wallets]);
 
-  const { data: quote, isValidating: quoteLoading } = useSwapQuote(swapParams)
+  const { data: quote, isValidating: quoteLoading } = useSwapQuote(swapParams);
 
   const handleFromTokenChange = useCallback((token: TokenInfo) => {
-    setFromToken(token)
-  }, [])
+    setFromToken(token);
+  }, []);
 
   const handleFromAmountChange = useCallback((value: string) => {
-    setFromAmount(value)
-  }, [])
+    setFromAmount(value);
+  }, []);
 
   if (!product) {
     return (
@@ -70,7 +77,7 @@ const EtfDetail: FC = () => {
           </p>
           <button
             onClick={() => {
-              void navigate('/')
+              void navigate("/");
             }}
             className="mt-6 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
@@ -78,13 +85,14 @@ const EtfDetail: FC = () => {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
-  const supportedAddresses = ETF_SUPPORTED_CHAINS
-    .map((chain) => [chain, product.addresses[chain]] as const)
+  const supportedAddresses = ETF_SUPPORTED_CHAINS.map(
+    (chain) => [chain, product.addresses[chain]] as const,
+  )
     .filter(([, address]) => address !== null)
-    .map(([chain, address]) => [chain, address] as [string, string])
+    .map(([chain, address]) => [chain, address] as [string, string]);
 
   return (
     <div className="flex flex-1 flex-col px-6 py-8">
@@ -92,7 +100,7 @@ const EtfDetail: FC = () => {
         {/* Back */}
         <button
           onClick={() => {
-            void navigate(-1)
+            void navigate(-1);
           }}
           className="mb-6 flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground"
         >
@@ -123,7 +131,7 @@ const EtfDetail: FC = () => {
                   </div>
                   <p className="mt-1 text-sm text-muted">
                     {supportedAddresses.length} chain
-                    {supportedAddresses.length === 1 ? '' : 's'} available
+                    {supportedAddresses.length === 1 ? "" : "s"} available
                   </p>
                 </div>
               </div>
@@ -135,14 +143,14 @@ const EtfDetail: FC = () => {
                 Contract Addresses
               </h2>
               {supportedAddresses.map(([chain, address]) => {
-                const isSelected = chain === selectedChain
+                const isSelected = chain === selectedChain;
                 return (
                   <div
                     key={chain}
                     className={`flex items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${
                       isSelected
-                        ? 'border-primary/50 bg-primary/5'
-                        : 'border-border/50 bg-card/60'
+                        ? "border-primary/50 bg-primary/5"
+                        : "border-border/50 bg-card/60"
                     }`}
                   >
                     <div className="min-w-0 flex-1">
@@ -157,20 +165,20 @@ const EtfDetail: FC = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          setSelectedChain(chain)
+                          setSelectedChain(chain);
                         }}
                         className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
                           isSelected
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-card text-muted hover:bg-card/80'
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card text-muted hover:bg-card/80"
                         }`}
                       >
-                        {isSelected ? 'Selected' : 'Select'}
+                        {isSelected ? "Selected" : "Select"}
                       </button>
                       <CopyButton text={address} />
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </div>
@@ -185,28 +193,26 @@ const EtfDetail: FC = () => {
             />
 
             {quoteLoading && (
-              <p className="text-xs text-muted animate-pulse">Fetching quote…</p>
+              <p className="text-xs text-muted animate-pulse">
+                Fetching quote…
+              </p>
             )}
             {quote && (
               <div className="w-full max-w-md rounded-xl border border-border/50 bg-card/60 px-4 py-3 text-xs text-muted">
-                <span className="font-medium text-foreground">Receive</span>{' '}
-                {quote.amountToReceive}{' '}
+                <span className="font-medium text-foreground">Receive</span>{" "}
+                {quote.amountToReceive}{" "}
                 <span className="text-muted">{etfToken?.symbol}</span>
                 {quote.impact && (
-                  <span className="ml-2">
-                    · Impact {quote.impact.percent}%
-                  </span>
+                  <span className="ml-2">· Impact {quote.impact.percent}%</span>
                 )}
-                <span className="ml-2">
-                  · Fee ${quote.fee.formatted}
-                </span>
+                <span className="ml-2">· Fee ${quote.fee.formatted}</span>
               </div>
             )}
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default EtfDetail
+export default EtfDetail;

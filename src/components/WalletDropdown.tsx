@@ -1,11 +1,11 @@
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAtom } from 'jotai'
 import { usePrivy, useLogin, useLogout } from '@privy-io/react-auth'
 import CopyButton from './CopyButton'
 import ChainSelectorModal from './ChainSelectorModal'
 import Dropdown from './Dropdown'
 import Icon from './Icon'
-import { activeWalletAtom } from '../storages/activeWallet'
+import { activeWalletAtom, walletsAtom } from '../storages/activeWallet'
 
 const typeToLabel = (connectorType?: string) => {
   if (!connectorType) return 'SmartWallet'
@@ -19,23 +19,41 @@ export const WalletDropdown: FC = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState<string>('')
   const [activeWallet, setActiveWallet] = useAtom(activeWalletAtom)
+  const [, setWallets] = useAtom(walletsAtom)
 
-  const wallets =
-    authenticated && user
-      ? user.linkedAccounts
-          .filter(
-            (a) =>
-              (a.type === 'wallet' || a.type === 'smart_wallet') &&
-              ('chainType' in a || 'smartWalletType' in a),
-          )
-          .map((a) => {
-            return {
-              address: a.address,
-              // @ts-expect-error - the types for linked accounts are a bit inconsistent, so we need to assert here
-              label: typeToLabel(a.chainType as string),
-            }
-          })
-      : []
+  const wallets = useMemo(
+    () =>
+      authenticated && user
+        ? user.linkedAccounts
+            .filter(
+              (a) =>
+                (a.type === 'wallet' || a.type === 'smart_wallet') &&
+                ('chainType' in a || 'smartWalletType' in a),
+            )
+            .map((a) => {
+              return {
+                address: a.address,
+                // @ts-expect-error - the types for linked accounts are a bit inconsistent, so we need to assert here
+                label: typeToLabel(a.chainType as string),
+                type: a.type,
+              }
+            })
+        : [],
+    [authenticated, user],
+  )
+
+  useEffect(() => {
+    setWallets(
+      wallets.map((w) => ({
+        address: w.address,
+        chainType: w.label === 'Solana' ? 'solana' : 'evm',
+      })),
+    )
+    if (!activeWallet && wallets.length > 0) {
+      const smartWallet = wallets.find((w) => w.type === 'smart_wallet')
+      setActiveWallet(smartWallet?.address ?? wallets[0].address)
+    }
+  }, [wallets, activeWallet, setActiveWallet, setWallets])
 
   const primaryLabel =
     authenticated && user
