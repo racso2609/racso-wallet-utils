@@ -1,58 +1,62 @@
-import { FC, useCallback, useState } from "react";
-import { usePrivy, useLogin, useLogout } from "@privy-io/react-auth";
-import CopyButton from "./CopyButton";
-import ChainSelectorModal from "./ChainSelectorModal";
-import Dropdown from "./Dropdown";
-import Icon from "./Icon";
+import { FC, useCallback, useState } from 'react'
+import { usePrivy, useLogin, useLogout } from '@privy-io/react-auth'
+import CopyButton from './CopyButton'
+import ChainSelectorModal from './ChainSelectorModal'
+import Dropdown from './Dropdown'
+import Icon from './Icon'
 
 const typeToLabel = (connectorType?: string) => {
-  if (!connectorType) return "SmartWallet";
-  return connectorType === "ethereum" ? "Wallet" : "Solana";
-};
+  if (!connectorType) return 'SmartWallet'
+  return connectorType === 'ethereum' ? 'Wallet' : 'Solana'
+}
 
 export const WalletDropdown: FC = () => {
-  const { ready, authenticated, user } = usePrivy();
-  const { login } = useLogin();
-  const { logout } = useLogout();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<string>("");
-  console.log("User data in WalletDropdown:", { user, authenticated });
+  const { ready, authenticated, user } = usePrivy()
+  const { login } = useLogin()
+  const { logout } = useLogout()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedAddress, setSelectedAddress] = useState<string>('')
 
   const wallets =
     authenticated && user
       ? user.linkedAccounts
           .filter(
             (a) =>
-              (a.type === "wallet" || a.type === "smart_wallet") &&
-              ("chainType" in a || "smartWalletType" in a),
+              (a.type === 'wallet' || a.type === 'smart_wallet') &&
+              ('chainType' in a || 'smartWalletType' in a),
           )
           .map((a) => {
             return {
               address: a.address,
               // @ts-expect-error - the types for linked accounts are a bit inconsistent, so we need to assert here
               label: typeToLabel(a.chainType as string),
-            };
+            }
           })
-      : [];
+      : []
 
   const primaryLabel =
     authenticated && user
-      ? typeof user.email === "string"
+      ? typeof user.email === 'string'
         ? user.email
-        : (user.email?.address ?? user.wallet?.address ?? "User")
-      : null;
+        : (user.email?.address ?? user.wallet?.address ?? 'User')
+      : null
 
   const handleOpenModal = useCallback((address: string) => {
-    setSelectedAddress(address);
-    setModalOpen(true);
-  }, []);
+    setSelectedAddress(address)
+    setModalOpen(true)
+  }, [])
 
   const handleCloseModal = useCallback(() => {
-    setModalOpen(false);
-  }, []);
+    setModalOpen(false)
+  }, [])
+
+  const handleOpenSolanaScanner = useCallback((address: string) => {
+    const url = `https://solscan.io/account/${address}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }, [])
 
   if (!ready) {
-    return <span className="text-xs text-muted-foreground">Loading…</span>;
+    return <span className="text-xs text-muted-foreground">Loading…</span>
   }
 
   if (authenticated && primaryLabel) {
@@ -89,17 +93,31 @@ export const WalletDropdown: FC = () => {
                     </span>
                     <div className="flex items-center gap-1 shrink-0">
                       <CopyButton text={address} />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleOpenModal(address);
-                        }}
-                        className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        aria-label="View on explorer"
-                        title="View on explorer"
-                      >
-                        <Icon name="external-link" size={14} />
-                      </button>
+                      {label === 'Solana' ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleOpenSolanaScanner(address)
+                          }}
+                          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          aria-label="View on Solscan"
+                          title="View on Solscan"
+                        >
+                          <Icon name="external-link" size={14} />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleOpenModal(address)
+                          }}
+                          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          aria-label="View on explorer"
+                          title="View on explorer"
+                        >
+                          <Icon name="external-link" size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -114,7 +132,7 @@ export const WalletDropdown: FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  logout().catch(console.error);
+                  logout().catch(console.error)
                 }}
                 className="w-full rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
               >
@@ -130,20 +148,20 @@ export const WalletDropdown: FC = () => {
           onClose={handleCloseModal}
         />
       </>
-    );
+    )
   }
 
   return (
     <button
       type="button"
       onClick={() => {
-        login();
+        login()
       }}
       className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
     >
       Log in
     </button>
-  );
-};
+  )
+}
 
-export default WalletDropdown;
+export default WalletDropdown
