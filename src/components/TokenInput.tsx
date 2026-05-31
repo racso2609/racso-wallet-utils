@@ -59,7 +59,7 @@ export const TokenInput: FC<TokenInputProps> = ({
   );
   const balance = balanceProp ?? fetchedBalance?.balance.formatted ?? "0.00";
 
-  const usdPrice = useTokenPrice(token?.address, token?.chainId);
+  const usdPrice = useTokenPrice(token?.symbol);
 
   const usdValue = useMemo(() => {
     if (usdPrice === undefined) return null;

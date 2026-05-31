@@ -1,9 +1,5 @@
 import { atom } from 'jotai'
 
-export type PriceKey = string
+export const tokenPricesAtom = atom<Record<string, number | null>>({})
 
-export function priceKey(chainId: string | number, address: string): PriceKey {
-  return `${String(chainId)}:${address.toLowerCase()}`
-}
-
-export const tokenPricesAtom = atom<Record<PriceKey, number>>({})
+export const pendingPricesAtom = atom<Record<string, boolean>>({})

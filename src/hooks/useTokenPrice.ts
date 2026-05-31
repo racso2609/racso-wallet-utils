@@ -1,24 +1,21 @@
 import { useAtom } from "jotai";
-import { tokenPricesAtom, priceKey } from "../storages/tokenPrices";
-import { getTokenPrice } from "../services/AlchemyService";
-import type { ChainId } from "../types/tokenList";
+import { tokenPricesAtom, pendingPricesAtom } from "../storages/tokenPrices";
+import { getTokenPriceBySymbol } from "../services/AlchemyService";
 
-export function useTokenPrice(
-  address?: string,
-  chainId?: ChainId,
-): number | undefined {
+export function useTokenPrice(symbol?: string): number | undefined {
   const [prices, setPrices] = useAtom(tokenPricesAtom);
+  const [pending, setPending] = useAtom(pendingPricesAtom);
 
-  if (address === undefined || chainId === undefined) return undefined;
+  if (symbol === undefined) return undefined;
 
-  const key = priceKey(chainId, address);
-  if (key in prices) return prices[key];
+  const key = symbol.toUpperCase();
+  if (key in prices) return prices[key] ?? undefined;
 
-  if (typeof chainId === "number") {
-    void getTokenPrice(address, chainId).then((price) => {
-      if (price !== null) {
-        setPrices((prev) => ({ ...prev, [key]: price }));
-      }
+  if (!pending[key]) {
+    setPending((prev) => ({ ...prev, [key]: true }));
+    void getTokenPriceBySymbol(key).then((price) => {
+      setPrices((prev) => ({ ...prev, [key]: price }));
+      setPending((prev) => ({ ...prev, [key]: false }));
     });
   }
 

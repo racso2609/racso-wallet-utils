@@ -114,21 +114,15 @@ export async function getTokenBalance(
   }
 }
 
-export async function getTokenPrice(
-  address: string,
-  chainId: number,
+export async function getTokenPriceBySymbol(
+  symbol: string,
 ): Promise<number | null> {
-  const network = chainNetwork.get(chainId)
-  if (network === undefined) return null
-
-  const alchemy = getAlchemy(chainId)
+  const alchemy = getAlchemy(8453)
   if (alchemy === null) return null
 
-  const response = await alchemy.prices.getTokenPriceByAddress([
-    { network, address },
-  ])
-  const value = response.data[0]?.prices[0]?.value
+  const response = await alchemy.prices.getTokenPriceBySymbol([symbol])
+  const price = response.data[0]?.prices[0]
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (value === undefined) return null
-  return Number(value)
+  if (price === undefined) return null
+  return Number(price.value)
 }
