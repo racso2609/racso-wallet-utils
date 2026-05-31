@@ -113,3 +113,22 @@ export async function getTokenBalance(
     chainId,
   }
 }
+
+export async function getTokenPrice(
+  address: string,
+  chainId: number,
+): Promise<number | null> {
+  const network = chainNetwork.get(chainId)
+  if (network === undefined) return null
+
+  const alchemy = getAlchemy(chainId)
+  if (alchemy === null) return null
+
+  const response = await alchemy.prices.getTokenPriceByAddress([
+    { network, address },
+  ])
+  const value = response.data[0]?.prices[0]?.value
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (value === undefined) return null
+  return Number(value)
+}

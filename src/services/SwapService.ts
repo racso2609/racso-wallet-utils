@@ -1,5 +1,5 @@
-import { Address, formatUnits, Hash } from 'viem'
-import { relayFetcher } from '../utils/fetcher/relayFetcher'
+import { Address, formatUnits, Hash } from "viem";
+import { relayFetcher } from "../utils/fetcher/relayFetcher";
 import type {
   CurrencyGasTopup,
   RelayQuoteResponse,
@@ -8,49 +8,49 @@ import type {
   SwapQuote,
   SwapTransaction,
   TokenBalance,
-} from './swap.types'
+} from "./swap.types";
 
 const EXCLUDED_SWAP_SOURCES = [
-  'dflow',
-  'wsol',
-  'camelot',
-  'open-ocean',
-  'odos',
-  'okxSvm',
-  'okxEvm',
-  'bebopPmm',
-  'bebopJam',
-  'cetus',
-  'rooster',
-  'eisen',
-  'okxSui',
-  'fabric',
-  'hyperswap',
-  'eisen-v2',
-  'fynd',
-]
+  // "dflow",
+  // "wsol",
+  // "camelot",
+  // "open-ocean",
+  // "odos",
+  // "okxSvm",
+  // "okxEvm",
+  // "bebopPmm",
+  // "bebopJam",
+  // "cetus",
+  // "rooster",
+  // "eisen",
+  // "okxSui",
+  // "fabric",
+  // "hyperswap",
+  // "eisen-v2",
+  // "fynd",
+];
 
 export class SwapService {
-  private static instance: SwapService | null = null
+  private static instance: SwapService | null = null;
 
   private constructor() {
     /* intentionally empty */
   }
 
   static getInstance(): SwapService {
-    SwapService.instance ??= new SwapService()
-    return SwapService.instance
+    SwapService.instance ??= new SwapService();
+    return SwapService.instance;
   }
 
   async getTxsByUser(user: string): Promise<
     {
-      metadata: { tokenFrom: string; tokenTo: string }
-      txs: SwapTransaction[]
+      metadata: { tokenFrom: string; tokenTo: string };
+      txs: SwapTransaction[];
     }[]
   > {
     const response = await relayFetcher<RelayRequestInfo>(
       `/requests/v2?user=${user}`,
-    )
+    );
 
     return response.requests.map((request) => ({
       metadata: {
@@ -67,7 +67,7 @@ export class SwapService {
           value: BigInt(tx.data.value),
           hash: tx.hash as Hash,
         })),
-    }))
+    }));
   }
 
   async getDestinationTxHash(
@@ -77,69 +77,69 @@ export class SwapService {
   ): Promise<string | null> {
     const response = await relayFetcher<RelayRequestInfo>(
       `/requests/v2?user=${user}`,
-    )
+    );
 
     const requestBySourceHash = new Map<
       string,
       (typeof response.requests)[number]
-    >()
+    >();
     for (const request of response.requests) {
       for (const tx of request.data.inTxs) {
         if (tx.hash && !requestBySourceHash.has(tx.hash)) {
-          requestBySourceHash.set(tx.hash, request)
+          requestBySourceHash.set(tx.hash, request);
         }
       }
     }
 
-    const matchedRequest = requestBySourceHash.get(sourceHash)
-    if (!matchedRequest) return null
+    const matchedRequest = requestBySourceHash.get(sourceHash);
+    if (!matchedRequest) return null;
 
-    const outTxs = matchedRequest.data.outTxs
+    const outTxs = matchedRequest.data.outTxs;
     if (!destChainId) {
-      return outTxs[0]?.hash ?? null
+      return outTxs[0]?.hash ?? null;
     }
 
-    const destTx = outTxs.find((tx) => tx.chainId === destChainId)
-    return destTx?.hash ?? null
+    const destTx = outTxs.find((tx) => tx.chainId === destChainId);
+    return destTx?.hash ?? null;
   }
 
   async getQuote(data: SwapParams): Promise<SwapQuote> {
-    const response = await relayFetcher<RelayQuoteResponse>('/quote/v2', {
-      method: 'POST',
+    const response = await relayFetcher<RelayQuoteResponse>("/quote/v2", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        tradeType: data.tradeType ?? 'EXACT_INPUT',
+        tradeType: data.tradeType ?? "EXACT_INPUT",
         user: data.from,
         originChainId: data.chainIdFrom,
         destinationChainId: data.chainIdTo,
         originCurrency: data.tokenFrom,
         destinationCurrency: data.tokenTo,
         amount: data.amount,
-        recipient: data.txs?.length ? undefined : data.to ?? data.from,
+        recipient: data.txs?.length ? undefined : (data.to ?? data.from),
         txs: data.txs?.map((tx) => ({ ...tx, value: tx.value.toString() })),
-        refundTo: data.from,
+        refundTo: data.refundTo,
         slippageTolerance: 200,
         excludedSwapSources: EXCLUDED_SWAP_SOURCES,
       }),
-    })
+    });
 
     const fee = Object.keys(response.fees).reduce<TokenBalance>(
       (acc, key) => {
-        const raw = response.fees[key]
+        const raw = response.fees[key];
         const usd =
-          raw && typeof raw === 'object' && 'amountUsd' in raw
+          raw && typeof raw === "object" && "amountUsd" in raw
             ? Number((raw as CurrencyGasTopup).amountUsd)
-            : 0
+            : 0;
 
         return {
           formatted: (Number(acc.formatted) + usd).toString(),
-          currency: 'USD',
-        }
+          currency: "USD",
+        };
       },
-      { formatted: '0', currency: 'USDC' },
-    )
+      { formatted: "0", currency: "USDC" },
+    );
 
     return {
       isFiat: false,
@@ -158,13 +158,12 @@ export class SwapService {
         response.details.currencyOut.currency.decimals,
       ),
       amountToReceiveRaw: response.details.currencyOut.minimumAmount,
-      slippage:
-        response.details.slippageTolerance?.destination?.percent ?? '1',
+      slippage: response.details.slippageTolerance?.destination?.percent ?? "1",
       impact: response.details.totalImpact,
       fees: response.fees,
       details: response.details,
-    }
+    };
   }
 }
 
-export const swapService = SwapService.getInstance()
+export const swapService = SwapService.getInstance();

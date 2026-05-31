@@ -5,16 +5,24 @@ import type { ChainId } from "../types/tokenList";
 import TokenPicker from "./TokenPicker";
 import { Icon } from "./Icon";
 import { useTokenBalance } from "../hooks/usePortfolio";
+import { useTokenPrice } from "../hooks/useTokenPrice";
 import { activeWalletAtom } from "../storages/activeWallet";
 
 const EVM_CHAINS: ChainId[] = [42161, 56, 8453]
 const SOLANA_CHAINS: ChainId[] = ['solana-mainnet-beta']
 
+function formatUsd(value: number): string {
+  if (value === 0) return "$0.00"
+  return value >= 0.01
+    ? `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : `$${value.toPrecision(4)}`
+}
+
 interface TokenInputProps {
   label: string;
   token?: TokenInfo;
   balance?: string;
-  usdRate?: string;
+  amount?: string;
   placeholder?: string;
   onAmountChange?: (value: string) => void;
   onTokenClick?: () => void;
@@ -26,14 +34,16 @@ export const TokenInput: FC<TokenInputProps> = ({
   label,
   token,
   balance: balanceProp,
-  usdRate = "1.00",
+  amount: amountProp,
   placeholder = "0",
   onAmountChange,
   onTokenClick,
   onTokenChange,
   type = "from",
 }) => {
-  const [amount, setAmount] = useState(token?.amount ?? "");
+  const [internalAmount, setInternalAmount] = useState(token?.amount ?? "");
+  const amount = amountProp ?? internalAmount;
+  const setAmount = amountProp !== undefined ? undefined : setInternalAmount;
   const [showPicker, setShowPicker] = useState(false);
   const [activeWallet] = useAtom(activeWalletAtom);
 
@@ -47,31 +57,39 @@ export const TokenInput: FC<TokenInputProps> = ({
     balanceProp !== undefined ? undefined : token?.address,
     balanceProp !== undefined ? undefined : token?.chainId,
   );
-  const balance = balanceProp ?? fetchedBalance?.balance ?? "0.00";
+  const balance = balanceProp ?? fetchedBalance?.balance.formatted ?? "0.00";
+
+  const usdPrice = useTokenPrice(token?.address, token?.chainId);
 
   const usdValue = useMemo(() => {
+    if (usdPrice === undefined) return null;
     const val = Number(amount);
-    if (Number.isNaN(val) || val === 0) return "$0.00";
-    const rate = Number(usdRate);
-    const total = val * (Number.isNaN(rate) ? 1 : rate);
-    return `$${total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }, [amount, usdRate]);
+    if (Number.isNaN(val) || val === 0) return formatUsd(0);
+    return formatUsd(val * usdPrice);
+  }, [amount, usdPrice]);
+
+  const usdBalance = useMemo(() => {
+    if (usdPrice === undefined) return null;
+    const val = Number(balance);
+    if (Number.isNaN(val) || val === 0) return null;
+    return formatUsd(val * usdPrice);
+  }, [balance, usdPrice]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
       if (/^\d*\.?\d*$/.test(val)) {
-        setAmount(val);
+        setAmount?.(val);
         onAmountChange?.(val);
       }
     },
-    [onAmountChange],
+    [onAmountChange, setAmount],
   );
 
   const handleMax = useCallback(() => {
-    setAmount(balance);
+    setAmount?.(balance);
     onAmountChange?.(balance);
-  }, [balance, onAmountChange]);
+  }, [balance, onAmountChange, setAmount]);
 
   const openPicker = useCallback(() => {
     if (onTokenChange) {
@@ -95,12 +113,13 @@ export const TokenInput: FC<TokenInputProps> = ({
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-medium text-muted">{label}</span>
         <span className="text-xs text-muted">
-          {isSelected && type === "from" && (
-            <>
-              Balance:{" "}
-              <span className="font-medium text-foreground">{balance}</span>
-            </>
-          )}
+          {isSelected && <>
+            Balance:{" "}
+            <span className="font-medium text-foreground">{balance}</span>
+            {usdBalance !== null && (
+              <span className="ml-1 text-muted">({usdBalance})</span>
+            )}
+          </>}
         </span>
       </div>
 
@@ -157,8 +176,10 @@ export const TokenInput: FC<TokenInputProps> = ({
       )}
 
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-xs text-muted">{usdValue}</span>
-        {isSelected && Number(balance) > 0 && (
+        <span className="text-xs text-muted">
+          {usdValue ?? <>&nbsp;</>}
+        </span>
+        {isSelected && Number(balance) > 0 && type === "from" && (
           <button
             type="button"
             className="text-xs font-medium text-primary transition-colors hover:text-primary/80"

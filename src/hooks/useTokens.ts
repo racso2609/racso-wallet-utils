@@ -1,57 +1,57 @@
-import { useMemo } from 'react'
-import type { ChainId, TokenList, TokenListItem } from '../types/tokenList'
-import tokenListData from '../data/tokenList.json'
+import { useMemo } from "react";
+import type { ChainId, TokenList, TokenListItem } from "../types/tokenList";
+import tokenListData from "../data/tokenList.json";
 
-const TOKEN_LIST = tokenListData as TokenList
+const TOKEN_LIST = tokenListData as TokenList;
 
 export function useTokenList(): TokenList {
-  return TOKEN_LIST
+  return TOKEN_LIST;
 }
 
 export function useTokensByChain(chainId: ChainId): TokenListItem[] {
-  const list = useTokenList()
-  const chain = list.find((c) => c.chainId === chainId)
-  return chain?.tokens ?? []
+  const list = useTokenList();
+  const chain = list.find((c) => c.chainId === chainId);
+  return chain?.tokens ?? [];
 }
 
 export function useToken(
   addressOrSymbol: string,
   chainId?: ChainId,
 ): TokenListItem | undefined {
-  const list = useTokenList()
+  const list = useTokenList();
 
   return useMemo(() => {
     for (const group of list) {
       if (chainId !== undefined && group.chainId !== chainId) {
-        continue
+        continue;
       }
       const found = group.tokens.find(
         (t) =>
           t.address.toLowerCase() === addressOrSymbol.toLowerCase() ||
           t.symbol.toLowerCase() === addressOrSymbol.toLowerCase(),
-      )
-      if (found) return found
+      );
+      if (found) return found;
     }
-    return undefined
-  }, [list, addressOrSymbol, chainId])
+    return undefined;
+  }, [list, addressOrSymbol, chainId]);
 }
 
 export function useAllTokens(): TokenListItem[] {
-  const list = useTokenList()
-  return useMemo(() => list.flatMap((group) => group.tokens), [list])
+  const list = useTokenList();
+  return useMemo(() => list.flatMap((group) => group.tokens), [list]);
 }
 
 export function useSearchTokens(query: string): TokenListItem[] {
-  const all = useAllTokens()
-  const q = query.trim().toLowerCase()
+  const all = useAllTokens();
+  const q = query.trim().toLowerCase();
 
   return useMemo(() => {
-    if (!q) return all
+    if (!q) return all;
     return all.filter(
       (t) =>
         t.symbol.toLowerCase().includes(q) ||
         t.name.toLowerCase().includes(q) ||
         t.address.toLowerCase().includes(q),
-    )
-  }, [all, q])
+    );
+  }, [all, q]);
 }

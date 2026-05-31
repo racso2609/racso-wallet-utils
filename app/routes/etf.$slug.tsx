@@ -1,5 +1,4 @@
 import { FC, useCallback, useMemo, useState } from "react";
-import { useAtom } from "jotai";
 import { useParams, useNavigate } from "react-router";
 import { XSTOCKS_PRODUCTS } from "../../src/utils/xstocksProducts";
 import { ETF_SUPPORTED_CHAINS } from "../../src/types/etf";
@@ -8,19 +7,11 @@ import CopyButton from "../../src/components/CopyButton";
 import SwapPanel from "../../src/components/SwapPanel";
 import Icon from "../../src/components/Icon";
 import { useSwapQuote } from "../../src/hooks/useSwapQuote";
-import { activeWalletAtom, walletsAtom } from "../../src/storages/activeWallet";
-import { RELAY_CHAIN_MAP } from "../../src/config/chains";
 import type { TokenInfo } from "../../src/types/token";
-
-function toRelayChainId(chainId: number): number {
-  return RELAY_CHAIN_MAP[chainId] ?? chainId;
-}
 
 const EtfDetail: FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [activeWallet] = useAtom(activeWalletAtom);
-  const [wallets] = useAtom(walletsAtom);
 
   const product = XSTOCKS_PRODUCTS.find((p) => p.slug === slug);
 
@@ -43,19 +34,15 @@ const EtfDetail: FC = () => {
   const swapParams = useMemo(() => {
     if (!fromToken || !fromAmount || !etfToken) return null;
 
-    const targetChainType = Number(etfToken.chainId) === 101 ? 'solana' : 'evm'
-    const fromAddr = wallets.find((w) => w.chainType === targetChainType)?.address ?? activeWallet
-    if (!fromAddr) return null
-
     return {
       tokenFrom: fromToken.address,
       tokenTo: etfToken.address,
       amount: fromAmount,
-      chainIdFrom: toRelayChainId(Number(fromToken.chainId)),
-      chainIdTo: toRelayChainId(Number(etfToken.chainId)),
-      from: fromAddr,
+      chainIdFrom: Number(fromToken.chainId),
+      chainIdTo: Number(etfToken.chainId),
+      from: "",
     };
-  }, [fromToken, fromAmount, activeWallet, etfToken, wallets]);
+  }, [fromToken, fromAmount, etfToken]);
 
   const { data: quote, isValidating: quoteLoading } = useSwapQuote(swapParams);
 
@@ -188,6 +175,7 @@ const EtfDetail: FC = () => {
             <SwapPanel
               fromToken={fromToken}
               toToken={etfToken ?? undefined}
+              toAmount={quote?.amountToReceive}
               onFromTokenChange={handleFromTokenChange}
               onFromAmountChange={handleFromAmountChange}
             />
@@ -197,15 +185,23 @@ const EtfDetail: FC = () => {
                 Fetching quote…
               </p>
             )}
+
             {quote && (
-              <div className="w-full max-w-md rounded-xl border border-border/50 bg-card/60 px-4 py-3 text-xs text-muted">
-                <span className="font-medium text-foreground">Receive</span>{" "}
-                {quote.amountToReceive}{" "}
-                <span className="text-muted">{etfToken?.symbol}</span>
+              <div className="w-full max-w-md space-y-1.5 rounded-xl border border-border/50 bg-card/40 px-4 py-3 text-xs text-muted">
+                <div className="flex justify-between">
+                  <span>Fee</span>
+                  <span className="font-medium text-foreground">${quote.fee.formatted}</span>
+                </div>
                 {quote.impact && (
-                  <span className="ml-2">· Impact {quote.impact.percent}%</span>
+                  <div className="flex justify-between">
+                    <span>Price Impact</span>
+                    <span className="font-medium text-foreground">{quote.impact.percent}%</span>
+                  </div>
                 )}
-                <span className="ml-2">· Fee ${quote.fee.formatted}</span>
+                <div className="flex justify-between">
+                  <span>Slippage</span>
+                  <span className="font-medium text-foreground">{quote.slippage}%</span>
+                </div>
               </div>
             )}
           </div>

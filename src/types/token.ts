@@ -7,4 +7,5 @@ export interface TokenInfo {
   amount?: string
   logo: string
   chainId: ChainId
+  decimals: number
 }

@@ -25,5 +25,6 @@ export function toTokenInfo(
     name: product.name,
     logo: product.iconUrl,
     chainId: CHAIN_ID_MAP[chain] ?? 56,
+    decimals: 18,
   }
 }

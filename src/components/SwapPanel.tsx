@@ -8,6 +8,7 @@ interface SwapPanelProps {
   toToken?: TokenInfo;
   fromBalance?: string;
   toBalance?: string;
+  toAmount?: string;
   onFromTokenClick?: () => void;
   onToTokenClick?: () => void;
   onFromTokenChange?: (token: TokenInfo) => void;
@@ -19,8 +20,9 @@ interface SwapPanelProps {
 export const SwapPanel: FC<SwapPanelProps> = ({
   fromToken: initialFromToken,
   toToken: initialToToken,
-  fromBalance = "0.00",
-  toBalance = "0.00",
+  fromBalance,
+  toBalance,
+  toAmount,
   onFromTokenClick,
   onToTokenClick,
   onFromTokenChange,
@@ -40,10 +42,13 @@ export const SwapPanel: FC<SwapPanelProps> = ({
     onSwap?.();
   }, [onSwap]);
 
-  const handleFromChange = useCallback((val: string) => {
-    setFromAmount(val);
-    onFromAmountChange?.(val);
-  }, [onFromAmountChange]);
+  const handleFromChange = useCallback(
+    (val: string) => {
+      setFromAmount(val);
+      onFromAmountChange?.(val);
+    },
+    [onFromAmountChange],
+  );
 
   return (
     <div className="relative w-full max-w-md rounded-3xl border border-border bg-card/80 p-5 shadow-2xl shadow-primary/5 backdrop-blur-xl sm:p-6">
@@ -52,7 +57,6 @@ export const SwapPanel: FC<SwapPanelProps> = ({
         label="Sell"
         token={fromToken}
         balance={swapped ? toBalance : fromBalance}
-        usdRate="1.00"
         onAmountChange={handleFromChange}
         onTokenClick={swapped ? onToTokenClick : onFromTokenClick}
         onTokenChange={swapped ? onToTokenChange : onFromTokenChange}
@@ -75,6 +79,7 @@ export const SwapPanel: FC<SwapPanelProps> = ({
         label="Buy"
         token={toToken}
         balance={swapped ? fromBalance : toBalance}
+        amount={toAmount}
         placeholder={fromAmount || "0"}
         onTokenClick={swapped ? onFromTokenClick : onToTokenClick}
         onTokenChange={swapped ? onFromTokenChange : onToTokenChange}
