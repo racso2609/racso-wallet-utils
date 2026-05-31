@@ -1,6 +1,8 @@
 allowBuilds:
   '@reown/appkit': true
   bufferutil: true
+  es5-ext: set this to true or false
   esbuild: true
   keccak: true
   utf-8-validate: true
+onlyBuiltDependencies: '["es5-ext"]'

@@ -4,6 +4,7 @@ import type { TokenInfo } from "../types/token";
 import { useAllTokens } from "../hooks/useTokens";
 import { getChainName } from "../config/chainInfo";
 import { Icon } from "./Icon";
+import { TokenItem } from "./TokenItem";
 
 interface TokenPickerProps {
   tokens?: TokenInfo[];
@@ -126,44 +127,15 @@ export const TokenPicker: FC<TokenPickerProps> = ({
             </div>
           ) : (
             filtered.map((token) => (
-              <button
+              <TokenItem
                 key={token.address}
-                type="button"
-                onClick={() => {
+                token={token}
+                selected={selectedToken?.address === token.address}
+                onSelect={() => {
                   onSelect(token);
                   onClose();
                 }}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
-                  selectedToken?.address === token.address
-                    ? "bg-primary/10 ring-1 ring-primary/30"
-                    : "hover:bg-accent/50"
-                }`}
-              >
-                <img
-                  src={token.logo}
-                  alt={token.symbol}
-                  className="h-8 w-8 rounded-full object-contain"
-                  loading="lazy"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-foreground">
-                      {token.symbol}
-                    </span>
-                    <span className="rounded bg-muted/60 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted">
-                      {getChainName(token.chainId)}
-                    </span>
-                  </div>
-                  <p className="truncate text-xs text-muted">{token.name}</p>
-                </div>
-                {selectedToken?.address === token.address && (
-                  <Icon
-                    name="check"
-                    size={14}
-                    className="shrink-0 text-primary"
-                  />
-                )}
-              </button>
+              />
             ))
           )}
         </div>

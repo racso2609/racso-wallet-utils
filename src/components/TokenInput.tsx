@@ -2,6 +2,7 @@ import { FC, useCallback, useMemo, useState } from 'react'
 import type { TokenInfo } from '../types/token'
 import TokenPicker from './TokenPicker'
 import { Icon } from './Icon'
+import { useTokenBalance } from '../hooks/usePortfolio'
 
 interface TokenInputProps {
   label: string
@@ -12,20 +13,29 @@ interface TokenInputProps {
   onAmountChange?: (value: string) => void
   onTokenClick?: () => void
   onTokenChange?: (newToken: TokenInfo) => void
+  userAddress?: string
 }
 
 export const TokenInput: FC<TokenInputProps> = ({
   label,
   token,
-  balance = '0.00',
+  balance: balanceProp,
   usdRate = '1.00',
   placeholder = '0',
   onAmountChange,
   onTokenClick,
   onTokenChange,
+  userAddress,
 }) => {
   const [amount, setAmount] = useState(token?.amount ?? '')
   const [showPicker, setShowPicker] = useState(false)
+
+  const { data: fetchedBalance } = useTokenBalance(
+    balanceProp !== undefined ? undefined : userAddress,
+    balanceProp !== undefined ? undefined : token?.address,
+    balanceProp !== undefined ? undefined : token?.chainId,
+  )
+  const balance = balanceProp ?? fetchedBalance?.balance ?? '0.00'
 
   const usdValue = useMemo(() => {
     const val = Number(amount)
