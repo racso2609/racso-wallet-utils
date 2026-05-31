@@ -46,46 +46,46 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   }, [tokens, search, chainFilter]);
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 ">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div
-        className="relative flex max-h-[85vh] w-full max-w-lg flex-col rounded-3xl border border-border/60 bg-card p-6 shadow-2xl sm:p-8"
+        className="relative flex max-h-[80vh] w-full max-w-sm flex-col rounded-3xl border border-border/60 bg-card p-5 shadow-2xl"
         onClick={(e) => {
           e.stopPropagation();
         }}
       >
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-foreground">Select Token</h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-foreground">Select Token</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-2 text-muted transition-colors hover:bg-accent hover:text-foreground"
+            className="rounded-lg p-1.5 text-muted transition-colors hover:bg-accent hover:text-foreground"
             aria-label="Close"
           >
-            <Icon name="close" size={20} />
+            <Icon name="close" size={18} />
           </button>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-3">
           <input
             type="text"
-            placeholder="Search by name, symbol, or address"
+            placeholder="Search name or symbol"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
             }}
-            className="w-full rounded-2xl border border-border/60 bg-muted/50 px-5 py-3.5 text-sm text-foreground outline-none transition-all placeholder:text-muted focus:border-primary/50 focus:bg-background focus:ring-1 focus:ring-primary/20"
+            className="w-full rounded-xl border border-border/60 bg-muted/50 px-4 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted focus:border-primary/50 focus:bg-background focus:ring-1 focus:ring-primary/20"
             autoFocus
           />
         </div>
 
         {chains.length > 1 && (
-          <div className="mb-4 flex flex-wrap gap-2">
+          <div className="mb-3 flex flex-wrap gap-1.5">
             <button
               type="button"
               onClick={() => {
                 setChainFilter(null);
               }}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
                 chainFilter === null
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted/50 text-muted hover:text-foreground"
@@ -100,7 +100,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
                 onClick={() => {
                   setChainFilter(cid);
                 }}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
                   chainFilter === cid
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted/50 text-muted hover:text-foreground"
@@ -112,13 +112,13 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           </div>
         )}
 
-        <div className="flex-1 space-y-1 overflow-y-auto pr-1">
+        <div className="token-list flex-1 -mr-1 space-y-0.5 overflow-y-auto pr-1">
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-muted">
-              <Icon name="search" size={40} className="mb-3 opacity-50" />
+            <div className="flex flex-col items-center justify-center py-10 text-muted">
+              <Icon name="search" size={32} className="mb-2 opacity-50" />
               <p className="text-sm font-medium">No tokens found</p>
-              <p className="mt-1 text-xs opacity-70">
-                Try searching with a different term
+              <p className="mt-0.5 text-xs opacity-70">
+                Try another search term
               </p>
             </div>
           ) : (
@@ -130,7 +130,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
                   onSelect(token);
                   onClose();
                 }}
-                className={`flex w-full items-center gap-4 rounded-2xl p-4 text-left transition-all ${
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
                   selectedToken?.address === token.address
                     ? "bg-primary/10 ring-1 ring-primary/30"
                     : "hover:bg-accent/50"
@@ -139,7 +139,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
                 <img
                   src={token.logo}
                   alt={token.symbol}
-                  className="h-10 w-10 rounded-full object-contain ring-2 ring-border/40"
+                  className="h-8 w-8 rounded-full object-contain"
                   loading="lazy"
                 />
                 <div className="flex-1 min-w-0">
@@ -147,18 +147,18 @@ export const TokenPicker: FC<TokenPickerProps> = ({
                     <span className="text-sm font-bold text-foreground">
                       {token.symbol}
                     </span>
-                    <span className="text-[10px] font-medium uppercase text-muted">
+                    <span className="rounded bg-muted/60 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted">
                       {getChainName(token.chainId)}
                     </span>
                   </div>
-                  <p className="mt-0.5 truncate text-xs text-muted">
+                  <p className="truncate text-xs text-muted">
                     {token.name}
                   </p>
                 </div>
                 {selectedToken?.address === token.address && (
                   <Icon
                     name="check"
-                    size={16}
+                    size={14}
                     className="shrink-0 text-primary"
                   />
                 )}
