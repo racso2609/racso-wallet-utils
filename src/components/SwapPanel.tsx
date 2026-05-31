@@ -13,6 +13,7 @@ interface SwapPanelProps {
   onFromTokenChange?: (token: TokenInfo) => void;
   onToTokenChange?: (token: TokenInfo) => void;
   onSwap?: () => void;
+  onFromAmountChange?: (value: string) => void;
 }
 
 export const SwapPanel: FC<SwapPanelProps> = ({
@@ -25,6 +26,7 @@ export const SwapPanel: FC<SwapPanelProps> = ({
   onFromTokenChange,
   onToTokenChange,
   onSwap,
+  onFromAmountChange,
 }) => {
   const [swapped, setSwapped] = useState(false);
   const [fromAmount, setFromAmount] = useState("");
@@ -40,7 +42,8 @@ export const SwapPanel: FC<SwapPanelProps> = ({
 
   const handleFromChange = useCallback((val: string) => {
     setFromAmount(val);
-  }, []);
+    onFromAmountChange?.(val);
+  }, [onFromAmountChange]);
 
   return (
     <div className="relative w-full max-w-md rounded-3xl border border-border bg-card/80 p-5 shadow-2xl shadow-primary/5 backdrop-blur-xl sm:p-6">

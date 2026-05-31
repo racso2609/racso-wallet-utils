@@ -1,8 +1,14 @@
 import { FC, useCallback, useMemo, useState } from "react";
+import { useAtom } from "jotai";
 import type { TokenInfo } from "../types/token";
+import type { ChainId } from "../types/tokenList";
 import TokenPicker from "./TokenPicker";
 import { Icon } from "./Icon";
 import { useTokenBalance } from "../hooks/usePortfolio";
+import { activeWalletAtom } from "../storages/activeWallet";
+
+const EVM_CHAINS: ChainId[] = [42161, 56, 8453]
+const SOLANA_CHAINS: ChainId[] = ['solana-mainnet-beta']
 
 interface TokenInputProps {
   label: string;
@@ -29,6 +35,12 @@ export const TokenInput: FC<TokenInputProps> = ({
 }) => {
   const [amount, setAmount] = useState(token?.amount ?? "");
   const [showPicker, setShowPicker] = useState(false);
+  const [activeWallet] = useAtom(activeWalletAtom);
+
+  const allowedChains = useMemo<ChainId[] | undefined>(() => {
+    if (type !== "from" || activeWallet === null) return undefined
+    return activeWallet.startsWith("0x") ? EVM_CHAINS : SOLANA_CHAINS
+  }, [type, activeWallet])
 
   const { data: fetchedBalance } = useTokenBalance(
     undefined,
@@ -140,6 +152,7 @@ export const TokenInput: FC<TokenInputProps> = ({
           onClose={() => {
             setShowPicker(false);
           }}
+          allowedChains={allowedChains}
         />
       )}
 

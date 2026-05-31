@@ -1,4 +1,5 @@
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useMemo, useState } from 'react'
+import { useAtom } from 'jotai'
 import { useParams, useNavigate } from 'react-router'
 import { XSTOCKS_PRODUCTS } from '../../src/utils/xstocksProducts'
 import { ETF_SUPPORTED_CHAINS } from '../../src/types/etf'
@@ -6,23 +7,57 @@ import { getFirstSupportedChain, toTokenInfo } from '../../src/utils/stocks'
 import CopyButton from '../../src/components/CopyButton'
 import SwapPanel from '../../src/components/SwapPanel'
 import Icon from '../../src/components/Icon'
+import { useSwapQuote } from '../../src/hooks/useSwapQuote'
+import { activeWalletAtom } from '../../src/storages/activeWallet'
+import { RELAY_CHAIN_MAP } from '../../src/config/chains'
 import type { TokenInfo } from '../../src/types/token'
+
+function toRelayChainId(chainId: number): number {
+  return RELAY_CHAIN_MAP[chainId] ?? chainId
+}
 
 const EtfDetail: FC = () => {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
+  const [activeWallet] = useAtom(activeWalletAtom)
 
   const product = XSTOCKS_PRODUCTS.find((p) => p.slug === slug)
 
-  // Hooks must be called before any early return
-  const [selectedChain, setSelectedChain] = useState<string>(
-    product ? getFirstSupportedChain(product) : '',
-  )
+  // Compute etfToken early so hooks below can reference it
+  const firstChain = product ? getFirstSupportedChain(product) : ''
+  const [selectedChain, setSelectedChain] = useState<string>(firstChain)
+
+  const selectedAddress = product
+    ? (product.addresses[selectedChain as keyof typeof product.addresses] ?? '')
+    : ''
+
+  const etfToken = product && selectedAddress
+    ? toTokenInfo(product, selectedAddress, selectedChain)
+    : null
 
   const [fromToken, setFromToken] = useState<TokenInfo | undefined>(undefined)
+  const [fromAmount, setFromAmount] = useState('')
+
+  const swapParams = useMemo(() => {
+    if (!fromToken || !fromAmount || !activeWallet || !etfToken) return null
+    return {
+      tokenFrom: fromToken.address,
+      tokenTo: etfToken.address,
+      amount: fromAmount,
+      chainIdFrom: toRelayChainId(Number(fromToken.chainId)),
+      chainIdTo: toRelayChainId(Number(etfToken.chainId)),
+      from: activeWallet,
+    }
+  }, [fromToken, fromAmount, activeWallet, etfToken])
+
+  const { data: quote, isValidating: quoteLoading } = useSwapQuote(swapParams)
 
   const handleFromTokenChange = useCallback((token: TokenInfo) => {
     setFromToken(token)
+  }, [])
+
+  const handleFromAmountChange = useCallback((value: string) => {
+    setFromAmount(value)
   }, [])
 
   if (!product) {
@@ -50,13 +85,6 @@ const EtfDetail: FC = () => {
     .map((chain) => [chain, product.addresses[chain]] as const)
     .filter(([, address]) => address !== null)
     .map(([chain, address]) => [chain, address] as [string, string])
-
-  const selectedAddress =
-    product.addresses[selectedChain as keyof typeof product.addresses] ?? ''
-
-  const etfToken = selectedAddress
-    ? toTokenInfo(product, selectedAddress, selectedChain)
-    : null
 
   return (
     <div className="flex flex-1 flex-col px-6 py-8">
@@ -148,14 +176,32 @@ const EtfDetail: FC = () => {
           </div>
 
           {/* Right: Swap Panel */}
-          <div className="flex justify-center lg:justify-end">
+          <div className="flex flex-col items-center gap-4 lg:items-end">
             <SwapPanel
               fromToken={fromToken}
               toToken={etfToken ?? undefined}
-              fromBalance="0.00"
-              toBalance="0.00"
               onFromTokenChange={handleFromTokenChange}
+              onFromAmountChange={handleFromAmountChange}
             />
+
+            {quoteLoading && (
+              <p className="text-xs text-muted animate-pulse">Fetching quote…</p>
+            )}
+            {quote && (
+              <div className="w-full max-w-md rounded-xl border border-border/50 bg-card/60 px-4 py-3 text-xs text-muted">
+                <span className="font-medium text-foreground">Receive</span>{' '}
+                {quote.amountToReceive}{' '}
+                <span className="text-muted">{etfToken?.symbol}</span>
+                {quote.impact && (
+                  <span className="ml-2">
+                    · Impact {quote.impact.percent}%
+                  </span>
+                )}
+                <span className="ml-2">
+                  · Fee ${quote.fee.formatted}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

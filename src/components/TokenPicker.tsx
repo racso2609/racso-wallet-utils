@@ -12,6 +12,7 @@ interface TokenPickerProps {
   selectedToken?: TokenInfo;
   onSelect: (token: TokenInfo) => void;
   onClose: () => void;
+  allowedChains?: ChainId[];
 }
 
 export const TokenPicker: FC<TokenPickerProps> = ({
@@ -19,14 +20,22 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   selectedToken,
   onSelect,
   onClose,
+  allowedChains,
 }) => {
   const [search, setSearch] = useState("");
   const [chainFilter, setChainFilter] = useState<ChainId | null>(null);
 
   const chainTokens = useAllTokens();
-  const tokens = useMemo(
+  const allTokens = useMemo(
     () => tokensProp ?? chainTokens.map((t) => ({ ...t, logo: t.logoUrl })),
     [tokensProp, chainTokens],
+  );
+  const tokens = useMemo(
+    () =>
+      allowedChains !== undefined
+        ? allTokens.filter((t) => allowedChains.includes(t.chainId))
+        : allTokens,
+    [allTokens, allowedChains],
   );
 
   const chains = useMemo(() => {

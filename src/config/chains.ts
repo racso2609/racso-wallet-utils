@@ -34,3 +34,7 @@ export const CHAIN_ID_MAP: Record<string, number> = {
   bsc: 56,
   mantle: 5000,
 }
+
+export const RELAY_CHAIN_MAP: Record<number, number> = {
+  101: 792703809, // solana
+}
