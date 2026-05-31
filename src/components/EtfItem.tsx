@@ -1,4 +1,5 @@
 import { FC } from 'react'
+import { useNavigate } from 'react-router'
 import type { EtfProduct } from '../types/etf'
 
 interface EtfItemProps {
@@ -7,6 +8,8 @@ interface EtfItemProps {
 }
 
 export const EtfItem: FC<EtfItemProps> = ({ product, onClick }) => {
+  const navigate = useNavigate()
+
   const activeChains = Object.entries(product.addresses)
     .filter(([, address]) => address !== null)
     .map(([chain]) => chain)
@@ -14,7 +17,10 @@ export const EtfItem: FC<EtfItemProps> = ({ product, onClick }) => {
   return (
     <button
       className="flex w-full items-center gap-3 rounded-xl border border-border/50 bg-card/60 p-3 text-left transition-colors hover:bg-card/80"
-      onClick={() => onClick?.(product)}
+      onClick={() => {
+        onClick?.(product)
+        void navigate(`/etf/${product.slug}`)
+      }}
     >
       <img
         src={product.iconUrl}

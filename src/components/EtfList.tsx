@@ -1,15 +1,12 @@
-import { FC, useState } from 'react'
+import { FC } from 'react'
 import { XSTOCKS_PRODUCTS } from '../utils/xstocksProducts'
+import { useStock } from '../hooks/useStock'
 import EtfItem from './EtfItem'
 
 export const EtfList: FC = () => {
-  const [search, setSearch] = useState('')
-
-  const filtered = XSTOCKS_PRODUCTS.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.symbol.toLowerCase().includes(search.toLowerCase()),
-  )
+  const { search, setSearch, filtered } = useStock({
+    products: XSTOCKS_PRODUCTS,
+  })
 
   return (
     <div className="flex flex-col gap-4">
