@@ -1,47 +1,42 @@
-import { FC, useCallback, useState } from 'react'
-import type { TokenInfo } from '../types/token'
-import TokenInput from './TokenInput'
+import { FC, useCallback, useState } from "react";
+import type { TokenInfo } from "../types/token";
+import TokenInput from "./TokenInput";
+import { Icon } from "./Icon";
 
 interface SwapPanelProps {
-  fromToken?: TokenInfo
-  toToken?: TokenInfo
-  fromChainName?: string
-  toChainName?: string
-  fromBalance?: string
-  toBalance?: string
-  onFromTokenClick?: () => void
-  onToTokenClick?: () => void
-  onSwap?: () => void
+  fromToken?: TokenInfo;
+  toToken?: TokenInfo;
+  fromBalance?: string;
+  toBalance?: string;
+  onFromTokenClick?: () => void;
+  onToTokenClick?: () => void;
+  onSwap?: () => void;
 }
 
 export const SwapPanel: FC<SwapPanelProps> = ({
   fromToken: initialFromToken,
   toToken: initialToToken,
-  fromChainName: initialFromChainName,
-  toChainName: initialToChainName,
-  fromBalance = '0.00',
-  toBalance = '0.00',
+  fromBalance = "0.00",
+  toBalance = "0.00",
   onFromTokenClick,
   onToTokenClick,
   onSwap,
 }) => {
-  const [swapped, setSwapped] = useState(false)
-  const [fromAmount, setFromAmount] = useState('')
+  const [swapped, setSwapped] = useState(false);
+  const [fromAmount, setFromAmount] = useState("");
 
-  const fromToken = swapped ? initialToToken : initialFromToken
-  const toToken = swapped ? initialFromToken : initialToToken
-  const fromChainName = swapped ? initialToChainName : initialFromChainName
-  const toChainName = swapped ? initialFromChainName : initialToChainName
+  const fromToken = swapped ? initialToToken : initialFromToken;
+  const toToken = swapped ? initialFromToken : initialToToken;
 
   const handleToggle = useCallback(() => {
-    setSwapped((prev) => !prev)
-    setFromAmount('')
-    onSwap?.()
-  }, [onSwap])
+    setSwapped((prev) => !prev);
+    setFromAmount("");
+    onSwap?.();
+  }, [onSwap]);
 
   const handleFromChange = useCallback((val: string) => {
-    setFromAmount(val)
-  }, [])
+    setFromAmount(val);
+  }, []);
 
   return (
     <div className="relative w-full max-w-md rounded-3xl border border-border bg-card/80 p-5 shadow-2xl shadow-primary/5 backdrop-blur-xl sm:p-6">
@@ -49,7 +44,6 @@ export const SwapPanel: FC<SwapPanelProps> = ({
       <TokenInput
         label="Sell"
         token={fromToken}
-        chainName={fromChainName}
         balance={swapped ? toBalance : fromBalance}
         usdRate="1.00"
         onAmountChange={handleFromChange}
@@ -64,20 +58,7 @@ export const SwapPanel: FC<SwapPanelProps> = ({
           className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card shadow-md transition-all hover:scale-110 hover:border-primary/50 hover:shadow-lg hover:rotate-180 active:scale-95"
           title="Swap tokens"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-foreground"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <polyline points="19 12 12 19 5 12" />
-          </svg>
+          <Icon name="arrow-down" size={16} className="text-foreground" />
         </button>
       </div>
 
@@ -85,9 +66,8 @@ export const SwapPanel: FC<SwapPanelProps> = ({
       <TokenInput
         label="Buy"
         token={toToken}
-        chainName={toChainName}
         balance={swapped ? fromBalance : toBalance}
-        placeholder={fromAmount || '0'}
+        placeholder={fromAmount || "0"}
         onTokenClick={swapped ? onFromTokenClick : onToTokenClick}
       />
 
@@ -97,10 +77,10 @@ export const SwapPanel: FC<SwapPanelProps> = ({
         onClick={onSwap}
         className="mt-5 w-full rounded-2xl bg-primary px-6 py-4 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98]"
       >
-        Connect Wallet
+        Buy Etf
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default SwapPanel
+export default SwapPanel;

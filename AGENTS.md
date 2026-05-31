@@ -67,6 +67,18 @@ export const MyComponent: FC<PropsWithChildren<MyComponentProps>> = ({ children,
 }
 ```
 
+### Icons
+
+- **Never use inline `<svg>` elements directly in components.** Always use the centralized `Icon` component (`@src/components/Icon.tsx`).
+- Add new icons to the `ICON_NAME` union and `ICONS` map in `Icon.tsx` instead of duplicating SVG markup.
+- This ensures consistency, reusability, and easy theme/styling updates.
+
+```typescript
+import { Icon } from './Icon'
+
+<Icon name="close" size={20} className="text-muted" />
+```
+
 ### Naming Conventions
 
 - **Components**: PascalCase (e.g., `Navbar`, `ProfileSection`)

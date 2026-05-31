@@ -10,6 +10,8 @@ export type IconName =
   | 'copy'
   | 'close'
   | 'arrow-right'
+  | 'search'
+  | 'arrow-down'
 
 interface IconProps {
   name: IconName
@@ -64,6 +66,18 @@ const ICONS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M5 12h14" />
       <path d="m12 5 7 7-7 7" />
+    </>
+  ),
+  search: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </>
+  ),
+  'arrow-down': (
+    <>
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <polyline points="19 12 12 19 5 12" />
     </>
   ),
 }

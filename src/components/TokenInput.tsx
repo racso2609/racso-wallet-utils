@@ -1,28 +1,31 @@
 import { FC, useCallback, useMemo, useState } from 'react'
 import type { TokenInfo } from '../types/token'
+import TokenPicker from './TokenPicker'
+import { Icon } from './Icon'
 
 interface TokenInputProps {
   label: string
   token?: TokenInfo
-  chainName?: string
   balance?: string
   usdRate?: string
   placeholder?: string
   onAmountChange?: (value: string) => void
   onTokenClick?: () => void
+  onTokenChange?: (newToken: TokenInfo) => void
 }
 
 export const TokenInput: FC<TokenInputProps> = ({
   label,
   token,
-  chainName,
   balance = '0.00',
   usdRate = '1.00',
   placeholder = '0',
   onAmountChange,
   onTokenClick,
+  onTokenChange,
 }) => {
   const [amount, setAmount] = useState(token?.amount ?? '')
+  const [showPicker, setShowPicker] = useState(false)
 
   const usdValue = useMemo(() => {
     const val = Number(amount)
@@ -35,7 +38,6 @@ export const TokenInput: FC<TokenInputProps> = ({
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value
-      // Allow only numbers and one decimal point
       if (/^\d*\.?\d*$/.test(val)) {
         setAmount(val)
         onAmountChange?.(val)
@@ -49,11 +51,23 @@ export const TokenInput: FC<TokenInputProps> = ({
     onAmountChange?.(balance)
   }, [balance, onAmountChange])
 
+  const openPicker = useCallback(() => {
+    onTokenClick?.()
+    setShowPicker(true)
+  }, [onTokenClick])
+
+  const handleSelectToken = useCallback(
+    (selectedToken: TokenInfo) => {
+      setShowPicker(false)
+      onTokenChange?.(selectedToken)
+    },
+    [onTokenChange],
+  )
+
   const isSelected = Boolean(token)
 
   return (
     <div className="rounded-2xl border border-border/50 bg-card/60 p-4 shadow-sm backdrop-blur-sm sm:p-5">
-      {/* Top row: label + balance */}
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-medium text-muted">{label}</span>
         <span className="text-xs text-muted">
@@ -66,7 +80,6 @@ export const TokenInput: FC<TokenInputProps> = ({
         </span>
       </div>
 
-      {/* Middle row: input + token selector */}
       <div className="flex items-center gap-3">
         <input
           type="text"
@@ -80,7 +93,7 @@ export const TokenInput: FC<TokenInputProps> = ({
         {token ? (
           <button
             type="button"
-            onClick={onTokenClick}
+            onClick={openPicker}
             className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3 py-2 transition-colors hover:bg-card/80"
           >
             <img
@@ -93,50 +106,29 @@ export const TokenInput: FC<TokenInputProps> = ({
               <span className="text-sm font-semibold text-foreground">
                 {token.symbol}
               </span>
-              {chainName && (
-                <span className="mt-0.5 text-[10px] uppercase text-muted">
-                  {chainName}
-                </span>
-              )}
             </div>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="ml-1 text-muted"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
+            <Icon name="chevron-down" size={12} className="ml-1 text-muted" />
           </button>
         ) : (
           <button
             type="button"
-            onClick={onTokenClick}
+            onClick={openPicker}
             className="flex shrink-0 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90"
           >
             SELECT TOKEN
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+            <Icon name="arrow-right" size={12} />
           </button>
         )}
       </div>
 
-      {/* Bottom row: USD value + Max */}
+      {showPicker && (
+        <TokenPicker
+          selectedToken={token}
+          onSelect={handleSelectToken}
+          onClose={() => { setShowPicker(false) }}
+        />
+      )}
+
       <div className="mt-2 flex items-center justify-between">
         <span className="text-xs text-muted">{usdValue}</span>
         {isSelected && Number(balance) > 0 && (

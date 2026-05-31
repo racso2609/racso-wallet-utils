@@ -1,0 +1,157 @@
+[
+  {
+    "chainId": 42161,
+    "chainName": "Arbitrum One",
+    "tokens": [
+      {
+        "symbol": "USDT",
+        "name": "Tether USD",
+        "address": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+        "chainId": 42161,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png"
+      },
+      {
+        "symbol": "USDC",
+        "name": "USD Coin",
+        "address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        "chainId": 42161,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0CE3606eB48/logo.png"
+      },
+      {
+        "symbol": "WETH",
+        "name": "Wrapped Ether",
+        "address": "0x82aF49447D8a07E3bd95BD0d56f352415231DaA1",
+        "chainId": 42161,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27ead9083C756Cc2/logo.png"
+      },
+      {
+        "symbol": "WBTC",
+        "name": "Wrapped BTC",
+        "address": "0x2f25b1430584b227c274b804ba01f3e61db1e21d",
+        "chainId": 42161,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png"
+      },
+      {
+        "symbol": "WBNB",
+        "name": "Wrapped BNB",
+        "address": "0x3b246a48dbe4eb4fe27fa9889508dfd76efc2586",
+        "chainId": 42161,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png"
+      },
+      {
+        "symbol": "ARB",
+        "name": "Arbitrum",
+        "address": "0x912CE59144191C1204E64559FE8253a0e49E6548",
+        "chainId": 42161,
+        "type": "ecosystem_pick",
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x912CE59144191C1204E64559FE8253a0e49E6548/logo.png"
+      }
+    ]
+  },
+  {
+    "chainId": 56,
+    "chainName": "BNB Smart Chain",
+    "tokens": [
+      {
+        "symbol": "WBNB",
+        "name": "Wrapped BNB",
+        "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+        "chainId": 56,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png"
+      },
+      {
+        "symbol": "USDT",
+        "name": "Tether USD",
+        "address": "0x55d398326f99059fF775485246999027B3197955",
+        "chainId": 56,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png"
+      },
+      {
+        "symbol": "USDC",
+        "name": "Bridged USDC",
+        "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+        "chainId": 56,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0CE3606eB48/logo.png"
+      },
+      {
+        "symbol": "WETH",
+        "name": "Binance-Peg Ethereum Token",
+        "address": "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
+        "chainId": 56,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27ead9083C756Cc2/logo.png"
+      },
+      {
+        "symbol": "WBTC",
+        "name": "Binance-Peg BTCB Token",
+        "address": "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3EAd9c",
+        "chainId": 56,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3EAd9c/logo.png"
+      },
+      {
+        "symbol": "CAKE",
+        "name": "PancakeSwap Token",
+        "address": "0x0E09FaA64409A609E89b757027640B83657859F8",
+        "chainId": 56,
+        "type": "ecosystem_pick",
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x0E09FaA64409A609E89b757027640B83657859F8/logo.png"
+      }
+    ]
+  },
+  {
+    "chainId": 8453,
+    "chainName": "Base",
+    "tokens": [
+      {
+        "symbol": "USDC",
+        "name": "USD Coin",
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "chainId": 8453,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0CE3606eB48/logo.png"
+      },
+      {
+        "symbol": "WETH",
+        "name": "Wrapped Ether",
+        "address": "0x4200000000000000000000000000000000000006",
+        "chainId": 8453,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27ead9083C756Cc2/logo.png"
+      },
+      {
+        "symbol": "USDT",
+        "name": "Tether USD",
+        "address": "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
+        "chainId": 8453,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png"
+      },
+      {
+        "symbol": "WBTC",
+        "name": "Wrapped BTC",
+        "address": "0xf28587b974BF0323d1f17F65eF33D19b66f4a97d",
+        "chainId": 8453,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png"
+      },
+      {
+        "symbol": "WBNB",
+        "name": "Wrapped BNB",
+        "address": "0x3638E66270E40A5D6E311394aB5987fBa921aA53",
+        "chainId": 8453,
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png"
+      },
+      {
+        "symbol": "AERO",
+        "name": "Aerodrome",
+        "address": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+        "chainId": 8453,
+        "type": "ecosystem_pick",
+        "logoUrl": "https://raw.githubusercontent.com/ethereum-optimism/ethereum-optimism.github.io/master/data/AERO/logo.png"
+      },
+      {
+        "symbol": "cbBTC",
+        "name": "Coinbase Wrapped BTC",
+        "address": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "chainId": 8453,
+        "type": "ecosystem_pick",
+        "logoUrl": "https://raw.githubusercontent.com/ethereum-optimism/ethereum-optimism.github.io/master/data/CBBTC/logo.png"
+      }
+    ]
+  }
+]

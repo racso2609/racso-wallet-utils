@@ -144,7 +144,6 @@ const EtfDetail: FC = () => {
           <div className="flex justify-center lg:justify-end">
             <SwapPanel
               toToken={etfToken ?? undefined}
-              toChainName={selectedChain || undefined}
               toBalance="0.00"
               onToTokenClick={() => {
                 /* TODO: open token selector */
