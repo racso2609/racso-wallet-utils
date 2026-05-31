@@ -1,6 +1,8 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
 import PrivyAuthProvider from '../src/contexts/PrivyContext'
 import ThemeProvider from '../src/contexts/ThemeContext'
+import Navbar from '../src/components/Navbar'
+import PageContainer from '../src/components/PageContainer'
 import '../src/index.css'
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -25,9 +27,12 @@ export default function App() {
   return (
     <PrivyAuthProvider>
       <ThemeProvider>
-        <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
-          <Outlet />
-        </div>
+        <PageContainer>
+          <Navbar />
+          <main className="relative flex-1">
+            <Outlet />
+          </main>
+        </PageContainer>
       </ThemeProvider>
     </PrivyAuthProvider>
   )

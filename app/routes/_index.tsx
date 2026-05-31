@@ -1,42 +1,40 @@
-import { FC, useEffect } from "react";
-import { useThemeContext } from "../../src/contexts/ThemeContext";
-import LoginButton from "../../src/components/LoginButton";
+import { FC } from 'react'
+import LoginButton from '../../src/components/LoginButton'
+import Icon from '../../src/components/Icon'
 
 const Home: FC = () => {
-  const { theme, setTheme } = useThemeContext();
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [theme]);
-
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
-      <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-        Hello
-      </h1>
-      <p className="text-muted max-w-md text-center">
-        React Router v7 Framework mode + Vite starter with a strong dim theme,
-        Jotai state, and Tailwind CSS.
-      </p>
-      <div className="flex items-center gap-4">
-        <LoginButton />
-        <button
-          type="button"
-          onClick={() => {
-            setTheme(theme === "dark" ? "light" : "dark");
-          }}
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-        >
-          Toggle Theme
-        </button>
-      </div>
-    </main>
-  );
-};
+    <div className="flex flex-1 flex-col items-center justify-center px-6 py-20">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center gap-8 rounded-3xl border border-border bg-card/80 p-8 shadow-2xl shadow-primary/5 backdrop-blur-xl sm:p-10">
+          {/* Logo */}
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
+            <Icon name="wallet" size={28} />
+          </div>
 
-export default Home;
+          {/* Text */}
+          <div className="flex flex-col items-center gap-2 text-center">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Wallet Utils
+            </h1>
+            <p className="text-sm leading-relaxed text-muted-foreground max-w-[16rem]">
+              Connect your wallet to execute transactions securely across EVM and Solana networks.
+            </p>
+          </div>
+
+          {/* Login */}
+          <div className="w-full">
+            <LoginButton />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <p className="mt-6 text-center text-xs text-muted-foreground/60">
+          Powered by Privy &middot; Secure embedded wallets
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default Home
