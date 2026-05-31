@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { TokenList, TokenListItem } from '../types/tokenList'
+import type { ChainId, TokenList, TokenListItem } from '../types/tokenList'
 import tokenListData from '../data/tokenList.json'
 
 const TOKEN_LIST = tokenListData as TokenList
@@ -8,7 +8,7 @@ export function useTokenList(): TokenList {
   return TOKEN_LIST
 }
 
-export function useTokensByChain(chainId: number): TokenListItem[] {
+export function useTokensByChain(chainId: ChainId): TokenListItem[] {
   const list = useTokenList()
   const chain = list.find((c) => c.chainId === chainId)
   return chain?.tokens ?? []
@@ -16,7 +16,7 @@ export function useTokensByChain(chainId: number): TokenListItem[] {
 
 export function useToken(
   addressOrSymbol: string,
-  chainId?: number,
+  chainId?: ChainId,
 ): TokenListItem | undefined {
   const list = useTokenList()
 

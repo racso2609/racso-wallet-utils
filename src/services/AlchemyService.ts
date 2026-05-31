@@ -16,6 +16,7 @@ export interface PortfolioToken {
   symbol: string
   name: string
   logoUrl: string | null
+  chainId: number
 }
 
 const instances = new Map<number, Alchemy>()
@@ -49,6 +50,7 @@ export async function getPortfolio(
         symbol: meta.symbol ?? '',
         name: meta.name ?? '',
         logoUrl: meta.logo ?? null,
+        chainId,
       }
     }),
   )
@@ -60,6 +62,25 @@ export async function getPortfolio(
     )
     .map((r) => r.value)
     .filter((t) => t.balance !== '0')
+}
+
+const EVM_CHAIN_IDS = [42161, 56, 8453] as const
+
+export async function getPortfolioForAllChains(
+  address: string,
+): Promise<PortfolioToken[]> {
+  if (!address.startsWith('0x')) return []
+
+  const results = await Promise.allSettled(
+    EVM_CHAIN_IDS.map((chainId) => getPortfolio(address, chainId)),
+  )
+
+  return results
+    .filter(
+      (r): r is PromiseFulfilledResult<PortfolioToken[]> =>
+        r.status === 'fulfilled',
+    )
+    .flatMap((r) => r.value)
 }
 
 export async function getTokenBalance(
@@ -89,5 +110,6 @@ export async function getTokenBalance(
     symbol: meta.symbol ?? '',
     name: meta.name ?? '',
     logoUrl: meta.logo ?? null,
+    chainId,
   }
 }

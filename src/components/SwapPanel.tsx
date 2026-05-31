@@ -75,6 +75,7 @@ export const SwapPanel: FC<SwapPanelProps> = ({
         placeholder={fromAmount || "0"}
         onTokenClick={swapped ? onFromTokenClick : onToTokenClick}
         onTokenChange={swapped ? onFromTokenChange : onToTokenChange}
+        type="to"
       />
 
       {/* Action button */}

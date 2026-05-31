@@ -15,7 +15,8 @@
         "name": "USD Coin",
         "address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
         "chainId": 42161,
-        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0CE3606eB48/logo.png"
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0CE3606eB48/logo.png",
+        "note": "Native Circle USDC. Older bridged version (USDC.e) is 0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
       },
       {
         "symbol": "WETH",
@@ -151,6 +152,68 @@
         "chainId": 8453,
         "type": "ecosystem_pick",
         "logoUrl": "https://raw.githubusercontent.com/ethereum-optimism/ethereum-optimism.github.io/master/data/CBBTC/logo.png"
+      }
+    ]
+  },
+  {
+    "chainId": "solana-mainnet-beta",
+    "chainName": "Solana Mainnet",
+    "tokens": [
+      {
+        "symbol": "USDC",
+        "name": "USD Coin",
+        "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "chainId": "solana-mainnet-beta",
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0CE3606eB48/logo.png",
+        "note": "Native Circle SPL Token"
+      },
+      {
+        "symbol": "USDT",
+        "name": "Tether USD",
+        "address": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+        "chainId": "solana-mainnet-beta",
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+        "note": "Native Tether SPL Token"
+      },
+      {
+        "symbol": "WSOL",
+        "name": "Wrapped SOL",
+        "address": "So11111111111111111111111111111111111111112",
+        "chainId": "solana-mainnet-beta",
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png",
+        "note": "Native Wrapped Solana Token"
+      },
+      {
+        "symbol": "WETH",
+        "name": "Wrapped Ether (Portal)",
+        "address": "7vfCXTUXx5WJV5JAD71gZm9w8ZJgEnv96mFiAnf3cx6D",
+        "chainId": "solana-mainnet-beta",
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27ead9083C756Cc2/logo.png",
+        "note": "Wormhole / Portal Bridged Ethereum"
+      },
+      {
+        "symbol": "WBTC",
+        "name": "Wrapped BTC (Portal)",
+        "address": "3NZ9JMVFb6w069Wd9g2Alwbdbv899wQg69gS7A3s7m62",
+        "chainId": "solana-mainnet-beta",
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png",
+        "note": "Wormhole / Portal Bridged Bitcoin"
+      },
+      {
+        "symbol": "WBNB",
+        "name": "Wrapped BNB (Portal)",
+        "address": "9g3Z9QW6zAD1V468V8XJgEP1m3o6tW12b59N2A7m3675",
+        "chainId": "solana-mainnet-beta",
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png",
+        "note": "Wormhole / Portal Bridged BNB"
+      },
+      {
+        "symbol": "JUP",
+        "name": "Jupiter",
+        "address": "JUPyiZJSUsm4s4aCc9bbzKa7BwS8m44Y6X7m3E6U35f",
+        "chainId": "solana-mainnet-beta",
+        "type": "ecosystem_pick",
+        "logoUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/assets/JUPyiZJSUsm4s4aCc9bbzKa7BwS8m44Y6X7m3E6U35f/logo.png"
       }
     ]
   }

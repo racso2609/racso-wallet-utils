@@ -1,57 +1,72 @@
-import { useCallback } from 'react'
-import { useSWRConfig } from 'swr'
-import useCustomFetch from './utils/useCustomFetch'
+import { useCallback } from "react";
+import { useAtom } from "jotai";
+import { useSWRConfig } from "swr";
+import useCustomFetch from "./utils/useCustomFetch";
+import type { ChainId } from "../types/tokenList";
 import {
-  getPortfolio as fetchPortfolio,
+  getPortfolioForAllChains as fetchPortfolioForAllChains,
   getTokenBalance as fetchTokenBalance,
   PortfolioToken,
-} from '../services/AlchemyService'
+} from "../services/AlchemyService";
+import { activeWalletAtom } from "../storages/activeWallet";
 
-export function usePortfolio(address?: string, chainId?: number) {
+export function usePortfolio(address?: string) {
+  const [activeWallet] = useAtom(activeWalletAtom);
+  const resolvedAddress = address ?? activeWallet ?? undefined;
+
   const key =
-    address !== undefined && chainId !== undefined
-      ? `portfolio_${address}_${String(chainId)}`
-      : null
+    resolvedAddress !== undefined ? `portfolio_${resolvedAddress}` : null;
 
   const fetcher = useCallback(async (): Promise<PortfolioToken[]> => {
-    if (address === undefined || chainId === undefined) return []
-    return fetchPortfolio(address, chainId)
-  }, [address, chainId])
+    if (resolvedAddress === undefined) return [];
+    return await fetchPortfolioForAllChains(resolvedAddress);
+  }, [resolvedAddress]);
 
-  return useCustomFetch<PortfolioToken[]>({ url: key, fetcher })
+  return useCustomFetch<PortfolioToken[]>({ url: key, fetcher });
 }
 
 export function useTokenBalance(
   address?: string,
   tokenAddress?: string,
-  chainId?: number,
+  chainId?: ChainId,
 ) {
-  const key =
-    address !== undefined && tokenAddress !== undefined && chainId !== undefined
-      ? `tokenBalance_${address}_${String(chainId)}_${tokenAddress}`
-      : null
+  const [activeWallet] = useAtom(activeWalletAtom);
+  const resolvedAddress = address ?? activeWallet ?? undefined;
 
-  const { cache } = useSWRConfig()
+  const key =
+    resolvedAddress !== undefined &&
+    tokenAddress !== undefined &&
+    chainId !== undefined
+      ? `tokenBalance_${resolvedAddress}_${String(chainId)}_${tokenAddress}`
+      : null;
+
+  const { cache } = useSWRConfig();
   const portfolioKey =
-    address !== undefined && chainId !== undefined
-      ? `portfolio_${address}_${String(chainId)}`
-      : null
+    resolvedAddress !== undefined ? `portfolio_${resolvedAddress}` : null;
 
   const fetcher = useCallback(async (): Promise<PortfolioToken | null> => {
-    if (address === undefined || tokenAddress === undefined || chainId === undefined) return null
+    if (
+      resolvedAddress === undefined ||
+      tokenAddress === undefined ||
+      chainId === undefined
+    )
+      return null;
 
     if (portfolioKey !== null) {
-      const cached = cache.get(portfolioKey)
+      const cached = cache.get(portfolioKey);
       if (cached?.data !== undefined) {
-        const portfolio = cached.data as PortfolioToken[]
+        const portfolio = cached.data as PortfolioToken[];
         const match = portfolio.find(
           (t) => t.address.toLowerCase() === tokenAddress.toLowerCase(),
-        )
-        if (match !== undefined) return match
+        );
+        if (match !== undefined) return match;
       }
     }
-    return fetchTokenBalance(address, tokenAddress, chainId)
-  }, [address, tokenAddress, chainId, portfolioKey, cache])
+    if (typeof chainId === 'number') {
+      return fetchTokenBalance(resolvedAddress, tokenAddress, chainId);
+    }
+    return null;
+  }, [resolvedAddress, tokenAddress, chainId, portfolioKey, cache]);
 
-  return useCustomFetch<PortfolioToken | null>({ url: key, fetcher })
+  return useCustomFetch<PortfolioToken | null>({ url: key, fetcher });
 }

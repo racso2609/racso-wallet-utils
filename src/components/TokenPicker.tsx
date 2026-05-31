@@ -1,6 +1,7 @@
 import { FC, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { TokenInfo } from "../types/token";
+import type { ChainId } from "../types/tokenList";
 import { useAllTokens } from "../hooks/useTokens";
 import { getChainName } from "../config/chainInfo";
 import { Icon } from "./Icon";
@@ -20,7 +21,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   onClose,
 }) => {
   const [search, setSearch] = useState("");
-  const [chainFilter, setChainFilter] = useState<number | null>(null);
+  const [chainFilter, setChainFilter] = useState<ChainId | null>(null);
 
   const chainTokens = useAllTokens();
   const tokens = useMemo(
@@ -29,8 +30,10 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   );
 
   const chains = useMemo(() => {
-    const ids = new Set(tokens.map((t) => t.chainId));
-    return Array.from(ids).sort((a, b) => a - b);
+    const ids = Array.from(new Set(tokens.map((t) => t.chainId)));
+    const nums = ids.filter((id): id is number => typeof id === 'number').sort((a, b) => a - b);
+    const strs = ids.filter((id): id is string => typeof id === 'string').sort();
+    return [...nums, ...strs];
   }, [tokens]);
 
   const filtered = useMemo(() => {

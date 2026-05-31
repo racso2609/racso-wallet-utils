@@ -1,14 +1,16 @@
+export type ChainId = number | string
+
 export interface TokenListItem {
   symbol: string
   name: string
   address: string
-  chainId: number
+  chainId: ChainId
   logoUrl: string
   type?: string
 }
 
 export interface ChainTokenGroup {
-  chainId: number
+  chainId: ChainId
   chainName: string
   tokens: TokenListItem[]
 }

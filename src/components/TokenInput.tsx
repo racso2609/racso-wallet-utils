@@ -1,91 +1,91 @@
-import { FC, useCallback, useMemo, useState } from 'react'
-import type { TokenInfo } from '../types/token'
-import TokenPicker from './TokenPicker'
-import { Icon } from './Icon'
-import { useTokenBalance } from '../hooks/usePortfolio'
+import { FC, useCallback, useMemo, useState } from "react";
+import type { TokenInfo } from "../types/token";
+import TokenPicker from "./TokenPicker";
+import { Icon } from "./Icon";
+import { useTokenBalance } from "../hooks/usePortfolio";
 
 interface TokenInputProps {
-  label: string
-  token?: TokenInfo
-  balance?: string
-  usdRate?: string
-  placeholder?: string
-  onAmountChange?: (value: string) => void
-  onTokenClick?: () => void
-  onTokenChange?: (newToken: TokenInfo) => void
-  userAddress?: string
+  label: string;
+  token?: TokenInfo;
+  balance?: string;
+  usdRate?: string;
+  placeholder?: string;
+  onAmountChange?: (value: string) => void;
+  onTokenClick?: () => void;
+  onTokenChange?: (newToken: TokenInfo) => void;
+  type?: "from" | "to";
 }
 
 export const TokenInput: FC<TokenInputProps> = ({
   label,
   token,
   balance: balanceProp,
-  usdRate = '1.00',
-  placeholder = '0',
+  usdRate = "1.00",
+  placeholder = "0",
   onAmountChange,
   onTokenClick,
   onTokenChange,
-  userAddress,
+  type = "from",
 }) => {
-  const [amount, setAmount] = useState(token?.amount ?? '')
-  const [showPicker, setShowPicker] = useState(false)
+  const [amount, setAmount] = useState(token?.amount ?? "");
+  const [showPicker, setShowPicker] = useState(false);
 
   const { data: fetchedBalance } = useTokenBalance(
-    balanceProp !== undefined ? undefined : userAddress,
+    undefined,
     balanceProp !== undefined ? undefined : token?.address,
     balanceProp !== undefined ? undefined : token?.chainId,
-  )
-  const balance = balanceProp ?? fetchedBalance?.balance ?? '0.00'
+  );
+  const balance = balanceProp ?? fetchedBalance?.balance ?? "0.00";
 
   const usdValue = useMemo(() => {
-    const val = Number(amount)
-    if (Number.isNaN(val) || val === 0) return '$0.00'
-    const rate = Number(usdRate)
-    const total = val * (Number.isNaN(rate) ? 1 : rate)
-    return `$${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  }, [amount, usdRate])
+    const val = Number(amount);
+    if (Number.isNaN(val) || val === 0) return "$0.00";
+    const rate = Number(usdRate);
+    const total = val * (Number.isNaN(rate) ? 1 : rate);
+    return `$${total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }, [amount, usdRate]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value
+      const val = e.target.value;
       if (/^\d*\.?\d*$/.test(val)) {
-        setAmount(val)
-        onAmountChange?.(val)
+        setAmount(val);
+        onAmountChange?.(val);
       }
     },
     [onAmountChange],
-  )
+  );
 
   const handleMax = useCallback(() => {
-    setAmount(balance)
-    onAmountChange?.(balance)
-  }, [balance, onAmountChange])
+    setAmount(balance);
+    onAmountChange?.(balance);
+  }, [balance, onAmountChange]);
 
   const openPicker = useCallback(() => {
     if (onTokenChange) {
-      setShowPicker(true)
+      setShowPicker(true);
     }
-    onTokenClick?.()
-  }, [onTokenClick, onTokenChange])
+    onTokenClick?.();
+  }, [onTokenClick, onTokenChange]);
 
   const handleSelectToken = useCallback(
     (selectedToken: TokenInfo) => {
-      setShowPicker(false)
-      onTokenChange?.(selectedToken)
+      setShowPicker(false);
+      onTokenChange?.(selectedToken);
     },
     [onTokenChange],
-  )
+  );
 
-  const isSelected = Boolean(token)
+  const isSelected = Boolean(token);
 
   return (
     <div className="rounded-2xl border border-border/50 bg-card/60 p-4 shadow-sm backdrop-blur-sm sm:p-5">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-medium text-muted">{label}</span>
         <span className="text-xs text-muted">
-          {isSelected && (
+          {isSelected && type === "from" && (
             <>
-              Balance:{' '}
+              Balance:{" "}
               <span className="font-medium text-foreground">{balance}</span>
             </>
           )}
@@ -137,7 +137,9 @@ export const TokenInput: FC<TokenInputProps> = ({
         <TokenPicker
           selectedToken={token}
           onSelect={handleSelectToken}
-          onClose={() => { setShowPicker(false) }}
+          onClose={() => {
+            setShowPicker(false);
+          }}
         />
       )}
 
@@ -154,7 +156,7 @@ export const TokenInput: FC<TokenInputProps> = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TokenInput
+export default TokenInput;
