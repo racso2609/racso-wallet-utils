@@ -1,8 +1,10 @@
-import { FC } from 'react'
+import { FC, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { XSTOCKS_PRODUCTS } from '../../src/utils/xstocksProducts'
 import { ETF_SUPPORTED_CHAINS } from '../../src/types/etf'
+import { getFirstSupportedChain, toTokenInfo } from '../../src/utils/stocks'
 import CopyButton from '../../src/components/CopyButton'
+import SwapPanel from '../../src/components/SwapPanel'
 import Icon from '../../src/components/Icon'
 
 const EtfDetail: FC = () => {
@@ -10,6 +12,11 @@ const EtfDetail: FC = () => {
   const navigate = useNavigate()
 
   const product = XSTOCKS_PRODUCTS.find((p) => p.slug === slug)
+
+  // Hooks must be called before any early return
+  const [selectedChain, setSelectedChain] = useState<string>(
+    product ? getFirstSupportedChain(product) : '',
+  )
 
   if (!product) {
     return (
@@ -37,9 +44,16 @@ const EtfDetail: FC = () => {
     .filter(([, address]) => address !== null)
     .map(([chain, address]) => [chain, address] as [string, string])
 
+  const selectedAddress =
+    product.addresses[selectedChain as keyof typeof product.addresses] ?? ''
+
+  const etfToken = selectedAddress
+    ? toTokenInfo(product, selectedAddress, selectedChain)
+    : null
+
   return (
     <div className="flex flex-1 flex-col px-6 py-8">
-      <div className="mx-auto w-full max-w-2xl">
+      <div className="mx-auto w-full max-w-6xl">
         {/* Back */}
         <button
           onClick={() => {
@@ -51,52 +65,92 @@ const EtfDetail: FC = () => {
           Back
         </button>
 
-        {/* Header Card */}
-        <div className="rounded-2xl border border-border bg-card/80 p-6 shadow-lg shadow-primary/5 backdrop-blur-xl sm:p-8">
-          <div className="flex items-start gap-5">
-            <img
-              src={product.iconUrl}
-              alt={product.name}
-              className="h-16 w-16 shrink-0 rounded-xl object-contain sm:h-20 sm:w-20"
-            />
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                  {product.name}
-                </h1>
-                <span className="shrink-0 rounded-lg bg-primary/10 px-2 py-0.5 text-sm font-semibold text-primary">
-                  {product.symbol}
-                </span>
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2">
+          {/* Left: ETF Info */}
+          <div className="space-y-6">
+            {/* Header Card */}
+            <div className="rounded-2xl border border-border bg-card/80 p-6 shadow-lg shadow-primary/5 backdrop-blur-xl sm:p-8">
+              <div className="flex items-start gap-5">
+                <img
+                  src={product.iconUrl}
+                  alt={product.name}
+                  className="h-16 w-16 shrink-0 rounded-xl object-contain sm:h-20 sm:w-20"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                      {product.name}
+                    </h1>
+                    <span className="shrink-0 rounded-lg bg-primary/10 px-2 py-0.5 text-sm font-semibold text-primary">
+                      {product.symbol}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-muted">
+                    {supportedAddresses.length} chain
+                    {supportedAddresses.length === 1 ? '' : 's'} available
+                  </p>
+                </div>
               </div>
-              <p className="mt-1 text-sm text-muted">
-                {supportedAddresses.length} chain
-                {supportedAddresses.length === 1 ? '' : 's'} available
-              </p>
+            </div>
+
+            {/* Addresses */}
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+                Contract Addresses
+              </h2>
+              {supportedAddresses.map(([chain, address]) => {
+                const isSelected = chain === selectedChain
+                return (
+                  <div
+                    key={chain}
+                    className={`flex items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${
+                      isSelected
+                        ? 'border-primary/50 bg-primary/5'
+                        : 'border-border/50 bg-card/60'
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-medium uppercase text-muted">
+                        {chain}
+                      </span>
+                      <p className="mt-0.5 truncate font-mono text-sm text-foreground">
+                        {address}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedChain(chain)
+                        }}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                          isSelected
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-card text-muted hover:bg-card/80'
+                        }`}
+                      >
+                        {isSelected ? 'Selected' : 'Select'}
+                      </button>
+                      <CopyButton text={address} />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
-        </div>
 
-        {/* Addresses */}
-        <div className="mt-6 space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-            Contract Addresses
-          </h2>
-          {supportedAddresses.map(([chain, address]) => (
-            <div
-              key={chain}
-              className="flex items-center justify-between gap-4 rounded-xl border border-border/50 bg-card/60 px-4 py-3"
-            >
-              <div className="min-w-0 flex-1">
-                <span className="text-xs font-medium uppercase text-muted">
-                  {chain}
-                </span>
-                <p className="mt-0.5 truncate font-mono text-sm text-foreground">
-                  {address}
-                </p>
-              </div>
-              <CopyButton text={address} />
-            </div>
-          ))}
+          {/* Right: Swap Panel */}
+          <div className="flex justify-center lg:justify-end">
+            <SwapPanel
+              toToken={etfToken ?? undefined}
+              toChainName={selectedChain || undefined}
+              toBalance="0.00"
+              onToTokenClick={() => {
+                /* TODO: open token selector */
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

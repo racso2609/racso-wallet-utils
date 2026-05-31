@@ -25,3 +25,12 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
 export function getChainById(id: number): ChainConfig | undefined {
   return SUPPORTED_CHAINS.find((chain) => chain.id === id)
 }
+
+export const CHAIN_ID_MAP: Record<string, number> = {
+  ethereum: 1,
+  solana: 101,
+  ton: 114,
+  ink: 7777777,
+  bsc: 56,
+  mantle: 5000,
+}
