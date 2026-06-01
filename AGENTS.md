@@ -88,6 +88,22 @@ import { Icon } from './Icon'
 - **Variables/Functions**: camelCase
 - **Atoms**: PascalCase with `Atom` suffix (e.g., `userAtom`, `themeAtom`)
 
+### KISS (Keep It Simple, Stupid)
+
+- **Prefer the simplest solution that works.** Avoid over-engineering, premature abstraction, or unnecessary layers.
+- If a component/hook/service can be written in 20 lines instead of 50, do it.
+- Don't create wrappers around single-line functions or introduce indirection for its own sake.
+- When in doubt, inline it. Extract only when the same logic is used in 2+ places.
+
+```typescript
+// Good: direct, no ceremony
+const total = tokens.reduce((s, t) => s + t.valueUsd, 0)
+
+// Bad: over-abstracted for a single use
+const calculateTotalValue = (items: Token[]) => items.reduce((s, t) => s + t.valueUsd, 0)
+const total = calculateTotalValue(tokens)
+```
+
 ### Utilities (DRY)
 
 - **Never duplicate generic logic across components.** Extract reusable functions to `src/utils/`.
