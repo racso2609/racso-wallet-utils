@@ -35,7 +35,11 @@ export const SwapSection: FC = () => {
     [wallets, activeWallet],
   );
 
-  const { executeTransaction, buildTransaction: buildTx, isLoading: txLoading } = useExecuteTransaction({
+  const {
+    executeTransaction,
+    buildTransaction: buildTx,
+    isLoading: txLoading,
+  } = useExecuteTransaction({
     onSuccess: (result) => {
       console.log("Swap succeeded:", result);
       setFromAmount("");
@@ -64,19 +68,13 @@ export const SwapSection: FC = () => {
     void executeTransaction(builtTx);
   }, [quote, swapParams, activeWalletInfo, buildTx, executeTransaction]);
 
-  const handleFromTokenChange = useCallback(
-    (token: TokenInfo) => {
-      setFromToken(token);
-    },
-    [],
-  );
+  const handleFromTokenChange = useCallback((token: TokenInfo) => {
+    setFromToken(token);
+  }, []);
 
-  const handleToTokenChange = useCallback(
-    (token: TokenInfo) => {
-      setToToken(token);
-    },
-    [],
-  );
+  const handleToTokenChange = useCallback((token: TokenInfo) => {
+    setToToken(token);
+  }, []);
 
   const handleFromAmountChange = useCallback((value: string) => {
     setFromAmount(value);
@@ -86,9 +84,6 @@ export const SwapSection: FC = () => {
 
   return (
     <div className="mb-8 space-y-4">
-      <h2 className="text-xl font-bold tracking-tight text-foreground">
-        Swap Tokens
-      </h2>
       <div className="flex flex-col items-center gap-4 lg:items-start">
         <SwapPanel
           fromToken={fromToken}

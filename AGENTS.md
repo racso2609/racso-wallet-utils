@@ -88,6 +88,22 @@ import { Icon } from './Icon'
 - **Variables/Functions**: camelCase
 - **Atoms**: PascalCase with `Atom` suffix (e.g., `userAtom`, `themeAtom`)
 
+### Utilities (DRY)
+
+- **Never duplicate generic logic across components.** Extract reusable functions to `src/utils/`.
+- Common candidates: formatters, parsers, validators, math helpers, array/object manipulations.
+- If you find yourself writing the same function in 2+ files, move it to `src/utils/<category>.ts` and import it.
+
+```typescript
+// src/utils/formatters.ts
+export function formatUsd(value: number): string {
+  if (value === 0) return '$0.00'
+  return value >= 0.01
+    ? `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : `$${value.toPrecision(4)}`
+}
+```
+
 ### Types
 
 - Enable strict mode in TypeScript
