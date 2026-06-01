@@ -9,6 +9,7 @@ interface SwapPanelProps {
   fromBalance?: string;
   toBalance?: string;
   toAmount?: string;
+  isSwapping?: boolean;
   onFromTokenClick?: () => void;
   onToTokenClick?: () => void;
   onFromTokenChange?: (token: TokenInfo) => void;
@@ -23,6 +24,7 @@ export const SwapPanel: FC<SwapPanelProps> = ({
   fromBalance,
   toBalance,
   toAmount,
+  isSwapping = false,
   onFromTokenClick,
   onToTokenClick,
   onFromTokenChange,
@@ -90,9 +92,10 @@ export const SwapPanel: FC<SwapPanelProps> = ({
       <button
         type="button"
         onClick={onSwap}
-        className="mt-5 w-full rounded-2xl bg-primary px-6 py-4 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98]"
+        disabled={isSwapping}
+        className="mt-5 w-full rounded-2xl bg-primary px-6 py-4 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Buy Etf
+        {isSwapping ? "Processing…" : "Buy Etf"}
       </button>
     </div>
   );

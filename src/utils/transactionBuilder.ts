@@ -1,3 +1,5 @@
+import type { SwapParams, SwapTransaction } from '../services/swap.types'
+
 export interface EoaTransaction {
   to: string
   value: bigint
@@ -36,7 +38,14 @@ export interface SendAction {
   chain: number
 }
 
-export type Action = SendAction
+export interface SwapAction {
+  type: 'swap'
+  swapParams: SwapParams
+  txs: SwapTransaction[]
+  chainId: number
+}
+
+export type Action = SendAction | SwapAction
 
 export const NATIVE_TOKEN = '0x0000000000000000000000000000000000000000'
 
@@ -73,13 +82,27 @@ function buildSendTransactions(action: SendAction): EoaTransaction[] {
   ]
 }
 
-export function buildTransaction(actions: Action[]): BuiltTransaction {
+function buildSwapTransactions(action: SwapAction): EoaTransaction[] {
+  return action.txs.map((tx: { to: string; value: bigint; data: string }) => ({
+    to: tx.to,
+    value: tx.value,
+    data: tx.data,
+    chainId: action.chainId,
+  }))
+}
+
+export function buildTransaction(actions: Action[], provider: 'safe' | 'eoa' = 'safe'): BuiltTransaction {
   if (actions.length === 0) {
     throw new Error('No actions provided')
   }
 
-  return {
-    provider: 'safe',
-    txs: actions.flatMap(buildSendTransactions),
+  const txs = actions.flatMap((action) => {
+    if (action.type === 'send') return buildSendTransactions(action)
+    return buildSwapTransactions(action)
+  })
+
+  if (provider === 'safe') {
+    return { provider: 'safe', txs }
   }
+  return { provider: 'eoa', txs }
 }

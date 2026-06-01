@@ -7,6 +7,9 @@ import CopyButton from "../../src/components/CopyButton";
 import SwapPanel from "../../src/components/SwapPanel";
 import Icon from "../../src/components/Icon";
 import { useSwapQuote } from "../../src/hooks/useSwapQuote";
+import { useExecuteTransaction } from "../../src/hooks/useExecuteTransaction";
+import { useAtom, useAtomValue } from "jotai";
+import { activeWalletAtom, walletsAtom } from "../../src/storages/activeWallet";
 import type { TokenInfo } from "../../src/types/token";
 
 const EtfDetail: FC = () => {
@@ -45,6 +48,52 @@ const EtfDetail: FC = () => {
   }, [fromToken, fromAmount, etfToken]);
 
   const { data: quote, isValidating: quoteLoading } = useSwapQuote(swapParams);
+
+  const [activeWallet] = useAtom(activeWalletAtom);
+  const wallets = useAtomValue(walletsAtom);
+
+  const activeWalletInfo = useMemo(
+    () =>
+      wallets.find(
+        (w: { address: string | null }) => w.address === activeWallet,
+      ),
+    [wallets, activeWallet],
+  );
+
+  const {
+    executeTransaction,
+    buildTransaction: buildTx,
+    isLoading: txLoading,
+  } = useExecuteTransaction({
+    onSuccess: (result) => {
+      console.log("Swap succeeded:", result);
+    },
+    onError: (error) => {
+      console.error("Swap failed:", error);
+    },
+  });
+
+  const handleSwapVoid = useCallback(() => {
+    if (!quote || !swapParams || !activeWalletInfo) return;
+
+    const { walletType } = activeWalletInfo;
+
+    const provider: "safe" | "eoa" =
+      walletType === "smart_wallet" ? "safe" : "eoa";
+    const builtTx = buildTx(
+      [
+        {
+          type: "swap",
+          swapParams,
+          txs: quote.txs,
+          chainId: swapParams.chainIdFrom,
+        },
+      ],
+      provider,
+    );
+
+    void executeTransaction(builtTx);
+  }, [quote, swapParams, activeWalletInfo, buildTx, executeTransaction]);
 
   const handleFromTokenChange = useCallback((token: TokenInfo) => {
     setFromToken(token);
@@ -178,6 +227,8 @@ const EtfDetail: FC = () => {
               toAmount={quote?.amountToReceive}
               onFromTokenChange={handleFromTokenChange}
               onFromAmountChange={handleFromAmountChange}
+              onSwap={handleSwapVoid}
+              isSwapping={txLoading}
             />
 
             {quoteLoading && (
@@ -190,17 +241,23 @@ const EtfDetail: FC = () => {
               <div className="w-full max-w-md space-y-1.5 rounded-xl border border-border/50 bg-card/40 px-4 py-3 text-xs text-muted">
                 <div className="flex justify-between">
                   <span>Fee</span>
-                  <span className="font-medium text-foreground">${quote.fee.formatted}</span>
+                  <span className="font-medium text-foreground">
+                    ${quote.fee.formatted}
+                  </span>
                 </div>
                 {quote.impact && (
                   <div className="flex justify-between">
                     <span>Price Impact</span>
-                    <span className="font-medium text-foreground">{quote.impact.percent}%</span>
+                    <span className="font-medium text-foreground">
+                      {quote.impact.percent}%
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span>Slippage</span>
-                  <span className="font-medium text-foreground">{quote.slippage}%</span>
+                  <span className="font-medium text-foreground">
+                    {quote.slippage}%
+                  </span>
                 </div>
               </div>
             )}

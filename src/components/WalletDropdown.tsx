@@ -47,6 +47,7 @@ export const WalletDropdown: FC = () => {
       wallets.map((w) => ({
         address: w.address,
         chainType: w.label === 'Solana' ? 'solana' : 'evm',
+        walletType: w.type === 'smart_wallet' ? 'smart_wallet' : 'wallet',
       })),
     )
     if (!activeWallet && wallets.length > 0) {

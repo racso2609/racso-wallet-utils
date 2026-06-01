@@ -48,7 +48,7 @@ export const useExecuteTransaction = ({
   const [isLoading, setIsLoading] = useState(false)
 
   const buildTx = useCallback(
-    (actions: Action[]) => buildTransaction(actions),
+    (actions: Action[], provider?: 'safe' | 'eoa') => buildTransaction(actions, provider),
     [],
   )
 
