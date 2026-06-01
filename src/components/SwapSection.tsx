@@ -1,30 +1,49 @@
 import { FC, useCallback, useMemo, useState } from "react";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useSwapQuote } from "../hooks/useSwapQuote";
 import { useExecuteTransaction } from "../hooks/useExecuteTransaction";
 import { activeWalletAtom, walletsAtom } from "../storages/activeWallet";
 import SwapPanel from "./SwapPanel";
 import { formatUsd } from "../utils/formatters";
 import type { TokenInfo } from "../types/token";
-import type { SwapParams } from "../services/swap.types";
 
-export const SwapSection: FC = () => {
+export interface SwapSectionProps {
+  /** Pre-selected destination token (e.g. ETF). When provided, the buy side is read-only. */
+  toToken?: TokenInfo;
+  /** Button text — defaults to "Swap" */
+  actionLabel?: string;
+  /** Called when a swap succeeds */
+  onSuccess?: () => void;
+  /** Called when a swap fails */
+  onError?: (error: Error) => void;
+}
+
+export const SwapSection: FC<SwapSectionProps> = ({
+  toToken: fixedToToken,
+  actionLabel = "Swap",
+  onSuccess,
+  onError,
+}) => {
   const [activeWallet] = useAtom(activeWalletAtom);
-  const [wallets] = useAtom(walletsAtom);
+  const wallets = useAtomValue(walletsAtom);
 
   const [fromToken, setFromToken] = useState<TokenInfo | undefined>(undefined);
-  const [toToken, setToToken] = useState<TokenInfo | undefined>(undefined);
+  const [userToToken, setUserToToken] = useState<TokenInfo | undefined>(
+    undefined,
+  );
   const [fromAmount, setFromAmount] = useState("");
 
-  const swapParams = useMemo<SwapParams | null>(() => {
-    if (!fromToken || !toToken || !fromAmount || !activeWallet) return null;
+  const toToken = fixedToToken ?? userToToken;
+
+  const swapParams = useMemo(() => {
+    if (!fromToken || !toToken || !fromAmount) return null;
     return {
       tokenFrom: fromToken.address,
       tokenTo: toToken.address,
       amount: fromAmount,
       chainIdFrom: Number(fromToken.chainId),
       chainIdTo: Number(toToken.chainId),
-      from: activeWallet,
+      from: activeWallet ?? "",
     };
   }, [fromToken, toToken, fromAmount, activeWallet]);
 
@@ -43,9 +62,11 @@ export const SwapSection: FC = () => {
     onSuccess: (result) => {
       console.log("Swap succeeded:", result);
       setFromAmount("");
+      onSuccess?.();
     },
     onError: (error) => {
       console.error("Swap failed:", error);
+      onError?.(error);
     },
   });
 
@@ -53,12 +74,9 @@ export const SwapSection: FC = () => {
     if (!quote || !swapParams || !activeWalletInfo) return;
 
     const { chainType, walletType } = activeWalletInfo;
-    if (chainType === "solana") {
-      console.error("Solana swaps not yet supported");
-      return;
-    }
+    const provider: "safe" | "eoa" | "solana" =
+      chainType === "solana" ? "solana" : walletType === "smart_wallet" ? "safe" : "eoa";
 
-    const provider = walletType === "smart_wallet" ? "safe" : "eoa";
     const builtTx = buildTx(
       [{ type: "swap", swapParams, txs: quote.txs }],
       provider,
@@ -73,12 +91,20 @@ export const SwapSection: FC = () => {
   }, []);
 
   const handleToTokenChange = useCallback((token: TokenInfo) => {
-    setToToken(token);
+    setUserToToken(token);
   }, []);
 
   const handleFromAmountChange = useCallback((value: string) => {
     setFromAmount(value);
   }, []);
+
+  const handleToggle = useCallback(() => {
+    setFromToken(toToken);
+    if (!fixedToToken) {
+      setUserToToken(fromToken);
+    }
+    setFromAmount("");
+  }, [fromToken, toToken, fixedToToken]);
 
   const toAmount = quote?.amountToReceive;
 
@@ -90,40 +116,37 @@ export const SwapSection: FC = () => {
           toToken={toToken}
           toAmount={toAmount}
           isSwapping={txLoading}
-          actionLabel="Swap"
+          actionLabel={actionLabel}
           onFromTokenChange={handleFromTokenChange}
-          onToTokenChange={handleToTokenChange}
+          onToTokenChange={fixedToToken ? undefined : handleToTokenChange}
           onFromAmountChange={handleFromAmountChange}
           onSwap={handleSwap}
+          onToggle={fixedToToken ? undefined : handleToggle}
         />
 
         {quoteLoading && !quote ? (
           <p className="text-xs text-muted animate-pulse">Fetching quote…</p>
         ) : (
-          quote && (
-            <div className="w-full space-y-1.5 rounded-xl border border-border/50 bg-card/40 px-4 py-3 text-xs text-muted">
-              <div className="flex justify-between">
-                <span>Fee</span>
-                <span className="font-medium text-foreground">
-                  {formatUsd(Number(quote.fee.formatted))}
-                </span>
-              </div>
-              {quote.impact && (
-                <div className="flex justify-between">
-                  <span>Price Impact</span>
-                  <span className="font-medium text-foreground">
-                    {quote.impact.percent}%
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span>Slippage</span>
-                <span className="font-medium text-foreground">
-                  {quote.slippage}%
-                </span>
-              </div>
+          <div className="w-full space-y-1.5 rounded-xl border border-border/50 bg-card/40 px-4 py-3 text-xs text-muted">
+            <div className="flex justify-between">
+              <span>Fee</span>
+              <span className="font-medium text-foreground">
+                {formatUsd(Number(quote?.fee?.formatted || 0))}
+              </span>
             </div>
-          )
+            <div className="flex justify-between">
+              <span>Price Impact</span>
+              <span className="font-medium text-foreground">
+                {quote?.impact?.percent || 0}%
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Slippage</span>
+              <span className="font-medium text-foreground">
+                {quote?.slippage || 0}%
+              </span>
+            </div>
+          </div>
         )}
       </div>
     </div>

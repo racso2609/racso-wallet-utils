@@ -1,16 +1,11 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { XSTOCKS_PRODUCTS } from "../../src/utils/xstocksProducts";
 import { ETF_SUPPORTED_CHAINS } from "../../src/types/etf";
 import { getFirstSupportedChain, toTokenInfo } from "../../src/utils/stocks";
 import CopyButton from "../../src/components/CopyButton";
-import SwapPanel from "../../src/components/SwapPanel";
+import SwapSection from "../../src/components/SwapSection";
 import Icon from "../../src/components/Icon";
-import { useSwapQuote } from "../../src/hooks/useSwapQuote";
-import { useExecuteTransaction } from "../../src/hooks/useExecuteTransaction";
-import { useAtom, useAtomValue } from "jotai";
-import { activeWalletAtom, walletsAtom } from "../../src/storages/activeWallet";
-import type { TokenInfo } from "../../src/types/token";
 
 const EtfDetail: FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -30,74 +25,6 @@ const EtfDetail: FC = () => {
     product && selectedAddress
       ? toTokenInfo(product, selectedAddress, selectedChain)
       : null;
-
-  const [fromToken, setFromToken] = useState<TokenInfo | undefined>(undefined);
-  const [fromAmount, setFromAmount] = useState("");
-
-  const swapParams = useMemo(() => {
-    if (!fromToken || !fromAmount || !etfToken) return null;
-
-    return {
-      tokenFrom: fromToken.address,
-      tokenTo: etfToken.address,
-      amount: fromAmount,
-      chainIdFrom: Number(fromToken.chainId),
-      chainIdTo: Number(etfToken.chainId),
-      from: "",
-    };
-  }, [fromToken, fromAmount, etfToken]);
-
-  const { data: quote, isValidating: quoteLoading } = useSwapQuote(swapParams);
-
-  const [activeWallet] = useAtom(activeWalletAtom);
-  const wallets = useAtomValue(walletsAtom);
-
-  const activeWalletInfo = useMemo(
-    () =>
-      wallets.find(
-        (w: { address: string | null }) => w.address === activeWallet,
-      ),
-    [wallets, activeWallet],
-  );
-
-  const {
-    executeTransaction,
-    buildTransaction: buildTx,
-    isLoading: txLoading,
-  } = useExecuteTransaction({
-    onSuccess: (result) => {
-      console.log("Swap succeeded:", result);
-      // clean inputs
-      setFromToken(undefined);
-    },
-    onError: (error) => {
-      console.error("Swap failed:", error);
-    },
-  });
-
-  const handleSwapVoid = useCallback(() => {
-    if (!quote || !swapParams || !activeWalletInfo) return;
-
-    const { walletType } = activeWalletInfo;
-
-    const provider: "safe" | "eoa" =
-      walletType === "smart_wallet" ? "safe" : "eoa";
-    const builtTx = buildTx(
-      [{ type: "swap", swapParams, txs: quote.txs }],
-      provider,
-      swapParams.chainIdFrom,
-    );
-
-    void executeTransaction(builtTx);
-  }, [quote, swapParams, activeWalletInfo, buildTx, executeTransaction]);
-
-  const handleFromTokenChange = useCallback((token: TokenInfo) => {
-    setFromToken(token);
-  }, []);
-
-  const handleFromAmountChange = useCallback((value: string) => {
-    setFromAmount(value);
-  }, []);
 
   if (!product) {
     return (
@@ -141,9 +68,9 @@ const EtfDetail: FC = () => {
         </button>
 
         {/* Two-column layout */}
-        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-stretch">
           {/* Left: ETF Info */}
-          <div className="space-y-6">
+          <div className="flex flex-col gap-6">
             {/* Header Card */}
             <div className="rounded-2xl border border-border bg-card/80 p-6 shadow-lg shadow-primary/5 backdrop-blur-xl sm:p-8">
               <div className="flex items-start gap-5">
@@ -170,7 +97,7 @@ const EtfDetail: FC = () => {
             </div>
 
             {/* Addresses */}
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
                 Contract Addresses
               </h2>
@@ -186,27 +113,32 @@ const EtfDetail: FC = () => {
                     }`}
                   >
                     <div className="min-w-0 flex-1">
-                      <span className="text-xs font-medium uppercase text-muted">
-                        {chain}
-                      </span>
-                      <p className="mt-0.5 truncate font-mono text-sm text-foreground">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          {chain}
+                        </span>
+                        {isSelected && (
+                          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                            Active
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1.5 truncate font-mono text-sm text-foreground">
                         {address}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedChain(chain);
-                        }}
-                        className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                          isSelected
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-card text-muted hover:bg-card/80"
-                        }`}
-                      >
-                        {isSelected ? "Selected" : "Select"}
-                      </button>
+                      {!isSelected && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedChain(chain);
+                          }}
+                          className="rounded-lg bg-card px-3 py-1.5 text-xs font-medium text-muted transition-all hover:bg-primary/10 hover:text-primary"
+                        >
+                          Select
+                        </button>
+                      )}
                       <CopyButton text={address} />
                     </div>
                   </div>
@@ -216,47 +148,20 @@ const EtfDetail: FC = () => {
           </div>
 
           {/* Right: Swap Panel */}
-          <div className="flex flex-col items-center gap-4 lg:items-end">
-            <SwapPanel
-              fromToken={fromToken}
-              toToken={etfToken ?? undefined}
-              toAmount={quote?.amountToReceive}
-              onFromTokenChange={handleFromTokenChange}
-              onFromAmountChange={handleFromAmountChange}
-              onSwap={handleSwapVoid}
-              isSwapping={txLoading}
-            />
-
-            {quoteLoading && (
-              <p className="text-xs text-muted animate-pulse">
-                Fetching quote…
-              </p>
-            )}
-
-            {quote && (
-              <div className="w-full max-w-md space-y-1.5 rounded-xl border border-border/50 bg-card/40 px-4 py-3 text-xs text-muted">
-                <div className="flex justify-between">
-                  <span>Fee</span>
-                  <span className="font-medium text-foreground">
-                    ${quote.fee.formatted}
-                  </span>
-                </div>
-                {quote.impact && (
-                  <div className="flex justify-between">
-                    <span>Price Impact</span>
-                    <span className="font-medium text-foreground">
-                      {quote.impact.percent}%
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span>Slippage</span>
-                  <span className="font-medium text-foreground">
-                    {quote.slippage}%
-                  </span>
-                </div>
+          <div className="flex h-full">
+            <div className="w-full rounded-2xl border border-border bg-card/80 p-6 shadow-lg shadow-primary/5 backdrop-blur-xl sm:p-8">
+              <div className="mb-4 flex items-center gap-2">
+                <Icon name="arrow-right" size={16} className="rotate-90 text-primary" />
+                <h2 className="text-sm font-semibold text-foreground">Purchase {product.symbol}</h2>
               </div>
-            )}
+              <SwapSection
+                toToken={etfToken ?? undefined}
+                actionLabel="Buy"
+                onSuccess={() => {
+                  console.log("ETF purchase succeeded");
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

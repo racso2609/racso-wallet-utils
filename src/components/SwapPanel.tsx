@@ -17,11 +17,12 @@ interface SwapPanelProps {
   onToTokenChange?: (token: TokenInfo) => void;
   onSwap?: () => void;
   onFromAmountChange?: (value: string) => void;
+  onToggle?: () => void;
 }
 
 export const SwapPanel: FC<SwapPanelProps> = ({
-  fromToken: initialFromToken,
-  toToken: initialToToken,
+  fromToken,
+  toToken,
   fromBalance,
   toBalance,
   toAmount,
@@ -33,18 +34,14 @@ export const SwapPanel: FC<SwapPanelProps> = ({
   onToTokenChange,
   onSwap,
   onFromAmountChange,
+  onToggle,
 }) => {
-  const [swapped, setSwapped] = useState(false);
   const [fromAmount, setFromAmount] = useState("");
 
-  const fromToken = swapped ? initialToToken : initialFromToken;
-  const toToken = swapped ? initialFromToken : initialToToken;
-
   const handleToggle = useCallback(() => {
-    setSwapped((prev) => !prev);
     setFromAmount("");
-    onSwap?.();
-  }, [onSwap]);
+    onToggle?.();
+  }, [onToggle]);
 
   const handleFromChange = useCallback(
     (val: string) => {
@@ -60,10 +57,10 @@ export const SwapPanel: FC<SwapPanelProps> = ({
       <TokenInput
         label="Sell"
         token={fromToken}
-        balance={swapped ? toBalance : fromBalance}
+        balance={fromBalance}
         onAmountChange={handleFromChange}
-        onTokenClick={swapped ? onToTokenClick : onFromTokenClick}
-        onTokenChange={swapped ? onToTokenChange : onFromTokenChange}
+        onTokenClick={onFromTokenClick}
+        onTokenChange={onFromTokenChange}
       />
 
       {/* Swap button */}
@@ -82,11 +79,11 @@ export const SwapPanel: FC<SwapPanelProps> = ({
       <TokenInput
         label="Buy"
         token={toToken}
-        balance={swapped ? fromBalance : toBalance}
+        balance={toBalance}
         amount={toAmount}
         placeholder={fromAmount || "0"}
-        onTokenClick={swapped ? onFromTokenClick : onToTokenClick}
-        onTokenChange={swapped ? onFromTokenChange : onToTokenChange}
+        onTokenClick={onToTokenClick}
+        onTokenChange={onToTokenChange}
         type="to"
       />
 

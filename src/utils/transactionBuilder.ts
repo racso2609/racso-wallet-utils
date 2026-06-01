@@ -93,11 +93,16 @@ function buildSwapTransactions(action: SwapAction): EoaTransaction[] {
 
 export function buildTransaction(
   actions: Action[],
-  provider: "safe" | "eoa" = "safe",
+  provider: "safe" | "eoa" | "solana" = "safe",
   chainId?: number,
 ): BuiltTransaction {
   if (actions.length === 0) {
     throw new Error("No actions provided");
+  }
+
+  if (provider === "solana") {
+    // Solana transactions are built differently — placeholder for now
+    return { provider: "solana", txs: [] };
   }
 
   let txs = actions.flatMap((action) => {

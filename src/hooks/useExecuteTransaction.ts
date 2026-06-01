@@ -49,7 +49,7 @@ export const useExecuteTransaction = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const buildTx = useCallback(
-    (actions: Action[], provider?: "safe" | "eoa", chainId?: number) =>
+    (actions: Action[], provider?: "safe" | "eoa" | "solana", chainId?: number) =>
       buildTransaction(actions, provider, chainId),
     [],
   );

@@ -46,13 +46,19 @@ export const PortfolioSection: FC = () => {
       </div>
 
       {/* Masonry Token Grid */}
-      <div className="columns-2 gap-3">
+      <div className="flex gap-4 overflow-x-auto h-[200px] items-center ">
+        {!tokens.length && (
+          <p className="text-sm text-muted animate-pulse">
+            No tokens with balance found.
+          </p>
+        )}
+
         {tokens
           .filter((t) => BigInt(t.balance.raw) > 0n)
           .map((token) => (
             <div
               key={`${String(token.chainId)}-${token.address}`}
-              className="break-inside-avoid mb-3"
+              className="mb-3 min-w-[200px] max-w-[200px] flex "
             >
               <TokenItem token={token} type="portfolio" />
             </div>
@@ -64,9 +70,7 @@ export const PortfolioSection: FC = () => {
         <div className="rounded-2xl border border-border bg-card/80 p-4 shadow-lg shadow-primary/5 backdrop-blur-xl">
           <div className="mb-3 flex items-center gap-2">
             <Icon name="wallet" size={16} className="text-muted" />
-            <h3 className="text-sm font-semibold text-foreground">
-              Wallets
-            </h3>
+            <h3 className="text-sm font-semibold text-foreground">Wallets</h3>
           </div>
           <div className="flex flex-wrap gap-2">
             {wallets.map((w) => (
@@ -76,9 +80,7 @@ export const PortfolioSection: FC = () => {
               >
                 <span
                   className={`h-2 w-2 rounded-full ${
-                    w.chainType === 'solana'
-                      ? 'bg-purple-400'
-                      : 'bg-blue-400'
+                    w.chainType === "solana" ? "bg-purple-400" : "bg-blue-400"
                   }`}
                 />
                 <span className="font-mono text-muted">
@@ -87,7 +89,7 @@ export const PortfolioSection: FC = () => {
                 <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
                   {w.chainType}
                 </span>
-                {w.walletType === 'smart_wallet' && (
+                {w.walletType === "smart_wallet" && (
                   <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase text-primary">
                     Smart
                   </span>

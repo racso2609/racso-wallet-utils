@@ -10,7 +10,7 @@ import type {
   TokenBalance,
 } from "./swap.types";
 
-const EXCLUDED_SWAP_SOURCES = [
+const EXCLUDED_SWAP_SOURCES: string[] = [
   // "dflow",
   // "wsol",
   // "camelot",
