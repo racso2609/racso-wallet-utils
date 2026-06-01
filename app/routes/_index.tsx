@@ -42,11 +42,11 @@ const Home: FC = () => {
           </div>
 
           {/* Portfolio + Swap XStack */}
-          <div className="mb-8 flex flex-col gap-8 lg:flex-row">
-            <div className="flex-1 min-w-0">
+          <div className="mb-8 flex flex-col gap-8 lg:flex-row lg:items-stretch">
+            <div className="flex-1 min-w-0 h-full">
               <PortfolioSection />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 h-full">
               <SwapSection />
             </div>
           </div>

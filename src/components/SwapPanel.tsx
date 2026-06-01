@@ -55,7 +55,7 @@ export const SwapPanel: FC<SwapPanelProps> = ({
   );
 
   return (
-    <div className="relative w-full max-w-md rounded-3xl border border-border bg-card/80 p-5 shadow-2xl shadow-primary/5 backdrop-blur-xl sm:p-6">
+    <div className="relative w-full rounded-3xl border border-border bg-card/80 p-5 shadow-2xl shadow-primary/5 backdrop-blur-xl sm:p-6">
       {/* From */}
       <TokenInput
         label="Sell"

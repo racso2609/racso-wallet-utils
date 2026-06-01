@@ -83,7 +83,7 @@ export const SwapSection: FC = () => {
   const toAmount = quote?.amountToReceive;
 
   return (
-    <div className="mb-8 space-y-4">
+    <div className="space-y-4 h-full flex flex-col">
       <div className="flex flex-col items-center gap-4 lg:items-start">
         <SwapPanel
           fromToken={fromToken}
@@ -97,33 +97,33 @@ export const SwapSection: FC = () => {
           onSwap={handleSwap}
         />
 
-        {quoteLoading && (
+        {quoteLoading && !quote ? (
           <p className="text-xs text-muted animate-pulse">Fetching quote…</p>
-        )}
-
-        {quote && (
-          <div className="w-full max-w-md space-y-1.5 rounded-xl border border-border/50 bg-card/40 px-4 py-3 text-xs text-muted">
-            <div className="flex justify-between">
-              <span>Fee</span>
-              <span className="font-medium text-foreground">
-                {formatUsd(Number(quote.fee.formatted))}
-              </span>
-            </div>
-            {quote.impact && (
+        ) : (
+          quote && (
+            <div className="w-full space-y-1.5 rounded-xl border border-border/50 bg-card/40 px-4 py-3 text-xs text-muted">
               <div className="flex justify-between">
-                <span>Price Impact</span>
+                <span>Fee</span>
                 <span className="font-medium text-foreground">
-                  {quote.impact.percent}%
+                  {formatUsd(Number(quote.fee.formatted))}
                 </span>
               </div>
-            )}
-            <div className="flex justify-between">
-              <span>Slippage</span>
-              <span className="font-medium text-foreground">
-                {quote.slippage}%
-              </span>
+              {quote.impact && (
+                <div className="flex justify-between">
+                  <span>Price Impact</span>
+                  <span className="font-medium text-foreground">
+                    {quote.impact.percent}%
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>Slippage</span>
+                <span className="font-medium text-foreground">
+                  {quote.slippage}%
+                </span>
+              </div>
             </div>
-          </div>
+          )
         )}
       </div>
     </div>
