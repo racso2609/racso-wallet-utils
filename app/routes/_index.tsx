@@ -2,6 +2,7 @@ import { FC } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
 import LoginButton from '../../src/components/LoginButton'
 import EtfList from '../../src/components/EtfList'
+import PortfolioSection from '../../src/components/PortfolioSection'
 import Icon from '../../src/components/Icon'
 
 const Home: FC = () => {
@@ -38,6 +39,9 @@ const Home: FC = () => {
               </span>
             </div>
           </div>
+
+          {/* Portfolio Section */}
+          <PortfolioSection />
 
           {/* ETF Grid */}
           <EtfList />

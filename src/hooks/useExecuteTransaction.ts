@@ -70,10 +70,9 @@ export const useExecuteTransaction = ({
           calls: txs.map((tx) => ({
             to: tx.to as Address,
             data: tx.data as Hex,
-            value: tx.value.toString(),
+            value: tx.value,
           })),
         },
-        { sponsor: true },
       );
       results.push(hash);
       return { hash: results[results.length - 1] };

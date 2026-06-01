@@ -4,6 +4,7 @@ export interface EoaTransaction {
   to: string;
   value: bigint;
   data?: string;
+  chainId?: number;
 }
 
 export type SolanaTransaction = Uint8Array;

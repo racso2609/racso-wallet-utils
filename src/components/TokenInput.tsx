@@ -1,8 +1,9 @@
 import { FC, useCallback, useMemo, useState } from "react";
 import { useAtom } from "jotai";
-import type { TokenInfo } from "../types/token";
 import type { ChainId } from "../types/tokenList";
-import TokenPicker from "./TokenPicker";
+import type { TokenInfo } from "../types/token";
+import { formatUsd } from "../utils/formatters";
+import { TokenPicker } from "./TokenPicker";
 import { Icon } from "./Icon";
 import { useTokenBalance } from "../hooks/usePortfolio";
 import { useTokenPrice } from "../hooks/useTokenPrice";
@@ -10,13 +11,6 @@ import { activeWalletAtom } from "../storages/activeWallet";
 
 const EVM_CHAINS: ChainId[] = [42161, 56, 8453];
 const SOLANA_CHAINS: ChainId[] = ["solana-mainnet-beta"];
-
-function formatUsd(value: number): string {
-  if (value === 0) return "$0.00";
-  return value >= 0.01
-    ? `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    : `$${value.toPrecision(4)}`;
-}
 
 interface TokenInputProps {
   label: string;

@@ -1,5 +1,86 @@
 import { Alchemy, Network } from "alchemy-sdk";
+import { formatUnits } from "viem";
 import { env } from "../config/env";
+import type { ChainId } from "../types/tokenList";
+import tokenList from "../data/tokenList.json";
+import { XSTOCKS_PRODUCTS } from "../utils/xstocksProducts";
+import type { EtfChain } from "../types/etf";
+
+const ETF_CHAIN_TO_CHAIN_ID: Record<EtfChain, ChainId | undefined> = {
+  ethereum: 1,
+  solana: "solana-mainnet-beta",
+  bsc: 56,
+  ton: undefined,
+  ink: undefined,
+  mantle: undefined,
+};
+
+function buildKnownTokenMap(): Map<string, { symbol: string; name: string; logoUrl: string | null; decimals?: number }> {
+  const map = new Map<string, { symbol: string; name: string; logoUrl: string | null; decimals?: number }>();
+
+  // tokenList.json
+  for (const chainGroup of tokenList) {
+    for (const token of chainGroup.tokens) {
+      const addr = typeof token.address === "string" ? token.address.toLowerCase() : token.address;
+      const key = `${String(token.chainId)}-${addr}`;
+      map.set(key, {
+        symbol: token.symbol,
+        name: token.name,
+        logoUrl: token.logoUrl,
+        decimals: token.decimals,
+      });
+    }
+  }
+
+  // xstocksProducts
+  for (const product of XSTOCKS_PRODUCTS) {
+    for (const [chainName, addr] of Object.entries(product.addresses)) {
+      if (addr === null) continue;
+      const chainId = ETF_CHAIN_TO_CHAIN_ID[chainName as EtfChain];
+      if (chainId === undefined) continue;
+      const normalized = typeof addr === "string" && addr.startsWith("0x")
+        ? addr.toLowerCase()
+        : addr;
+      const key = `${String(chainId)}-${normalized}`;
+      map.set(key, {
+        symbol: product.symbol,
+        name: product.name,
+        logoUrl: product.iconUrl,
+      });
+    }
+  }
+
+  return map;
+}
+
+const knownTokenMap = buildKnownTokenMap();
+
+function augmentTokenMetadata(
+  chainId: ChainId,
+  tokenAddress: string | undefined,
+  meta: { symbol: string | null; name: string | null; logo: string | null; decimals: number | null },
+): { symbol: string; name: string; logoUrl: string | null; decimals: number } {
+  let symbol = meta.symbol ?? "";
+  let name = meta.name ?? "";
+  let logoUrl = meta.logo ?? null;
+  let decimals = meta.decimals ?? 18;
+
+  if ((!symbol || !name || !logoUrl) && tokenAddress) {
+    const normalized = typeof tokenAddress === "string" && tokenAddress.startsWith("0x")
+      ? tokenAddress.toLowerCase()
+      : tokenAddress;
+    const key = `${String(chainId)}-${normalized}`;
+    const known = knownTokenMap.get(key);
+    if (known) {
+      symbol ||= known.symbol;
+      name ||= known.name;
+      logoUrl ??= known.logoUrl;
+      if (known.decimals !== undefined) decimals = known.decimals;
+    }
+  }
+
+  return { symbol, name, logoUrl, decimals };
+}
 
 const SUPPORTED_CHAINS = [
   [42161, Network.ARB_MAINNET] as const,
@@ -8,6 +89,10 @@ const SUPPORTED_CHAINS = [
 ];
 
 const chainNetwork = new Map<number, Network>(SUPPORTED_CHAINS);
+const networkChainId = new Map<Network, ChainId>(
+  SUPPORTED_CHAINS.map(([chainId, network]) => [network, chainId]),
+);
+networkChainId.set(Network.SOLANA_MAINNET, "solana-mainnet-beta");
 
 export interface PortfolioToken {
   address: string;
@@ -16,7 +101,7 @@ export interface PortfolioToken {
   symbol: string;
   name: string;
   logoUrl: string | null;
-  chainId: number;
+  chainId: ChainId;
 }
 
 const instances = new Map<number, Alchemy>();
@@ -38,29 +123,19 @@ export async function getPortfolio(
   const alchemy = getAlchemy(chainId);
   if (alchemy === null) return [];
 
-  const { tokenBalances } = await alchemy.core.getTokenBalances(address);
+  const { tokens } = await alchemy.core.getTokensForOwner(address);
 
-  const results = await Promise.allSettled(
-    tokenBalances.map(async (tb) => {
-      const meta = await alchemy.core.getTokenMetadata(tb.contractAddress);
-      return {
-        address: tb.contractAddress,
-        balance: tb.tokenBalance ?? "0",
-        decimals: meta.decimals ?? 18,
-        symbol: meta.symbol ?? "",
-        name: meta.name ?? "",
-        logoUrl: meta.logo ?? null,
-        chainId,
-      };
-    }),
-  );
-
-  return results
-    .filter(
-      (r): r is PromiseFulfilledResult<PortfolioToken> =>
-        r.status === "fulfilled",
-    )
-    .map((r) => r.value)
+  return tokens
+    .filter((t) => t.error === undefined && t.rawBalance !== undefined)
+    .map((t) => ({
+      address: t.contractAddress,
+      balance: t.rawBalance ?? "0",
+      decimals: t.decimals ?? 18,
+      symbol: t.symbol ?? "",
+      name: t.name ?? "",
+      logoUrl: t.logo ?? null,
+      chainId,
+    }))
     .filter((t) => t.balance !== "0");
 }
 
@@ -114,6 +189,77 @@ export async function getTokenBalance(
   };
 }
 
+export interface PortfolioTokenWithPrice extends PortfolioToken {
+  price: number | null;
+  valueUsd: number;
+}
+
+let portfolioAlchemy: Alchemy | null = null;
+
+function getPortfolioAlchemy(): Alchemy {
+  portfolioAlchemy ??= new Alchemy({
+    apiKey: env.VITE_ALCHEMY_API_KEY,
+    network: Network.ETH_MAINNET,
+  });
+  return portfolioAlchemy;
+}
+
+export async function getPortfolioWithPrices(
+  addresses: { address: string; chainType: "evm" | "solana" }[],
+): Promise<PortfolioTokenWithPrice[]> {
+  if (addresses.length === 0) return [];
+
+  const evmNetworks = Array.from(chainNetwork.values());
+
+  const request = addresses.map(({ address, chainType }) => ({
+    address,
+    networks: chainType === "solana" ? [Network.SOLANA_MAINNET] : evmNetworks,
+  }));
+
+  try {
+    const alchemy = getPortfolioAlchemy();
+    const response = await alchemy.portfolio.getTokensByWallet(
+      request,
+      true,
+      true,
+      true,
+    );
+
+    return response.data.tokens
+      .filter((t) => t.tokenBalance !== "0")
+      .map((t) => {
+        const chainId = networkChainId.get(t.network) ?? 0;
+        const meta = t.tokenMetadata;
+        const tokenAddress = (t as unknown as { tokenAddress?: string }).tokenAddress;
+        const augmented = augmentTokenMetadata(
+          chainId,
+          tokenAddress,
+          { symbol: meta?.symbol ?? null, name: meta?.name ?? null, logo: meta?.logo ?? null, decimals: meta?.decimals ?? null },
+        );
+        const balanceRaw = t.tokenBalance;
+        const balanceFormatted = formatUnits(BigInt(balanceRaw), augmented.decimals);
+        const priceItem = t.tokenPrices.find((p) => p.currency === "usd");
+        const price = priceItem !== undefined ? Number(priceItem.value) : null;
+        const valueUsd =
+          price !== null ? parseFloat(balanceFormatted) * price : 0;
+
+        return {
+          address: tokenAddress ?? "",
+          balance: balanceRaw,
+          decimals: augmented.decimals,
+          symbol: augmented.symbol,
+          name: augmented.name,
+          logoUrl: augmented.logoUrl,
+          chainId,
+          price,
+          valueUsd,
+        };
+      });
+  } catch {
+    return [];
+  }
+}
+
 export async function getTokenPriceBySymbol(
   symbol: string,
 ): Promise<number | null> {
@@ -130,3 +276,5 @@ export async function getTokenPriceBySymbol(
     return null;
   }
 }
+
+
