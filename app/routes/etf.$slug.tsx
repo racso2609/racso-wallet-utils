@@ -148,7 +148,7 @@ const EtfDetail: FC = () => {
           </div>
 
           {/* Right: Swap Panel */}
-          <div className="flex h-full">
+          <div className="flex h-full w-full">
             <SwapSection
               toToken={etfToken ?? undefined}
               onSuccess={() => {

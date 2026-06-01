@@ -137,8 +137,8 @@ export const SwapSection: FC<SwapSectionProps> = ({
   const toAmount = quote?.amountToReceive
 
   return (
-    <div className="flex h-full flex-col space-y-4">
-      <div className="flex flex-col items-center gap-4 lg:items-start">
+    <div className="flex h-full w-full flex-col space-y-4">
+      <div className="flex w-full flex-col items-center gap-4 lg:items-start">
         <SwapPanel
           fromToken={fromToken}
           toToken={toToken}
