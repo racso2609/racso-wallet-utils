@@ -1,46 +1,25 @@
-import { FC } from 'react'
-import { usePrivy } from '@privy-io/react-auth'
-import LoginButton from '../../src/components/LoginButton'
-import EtfList from '../../src/components/EtfList'
-import PortfolioSection from '../../src/components/PortfolioSection'
-import SwapSection from '../../src/components/SwapSection'
-import Icon from '../../src/components/Icon'
+import { FC } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import LoginButton from "../../src/components/LoginButton";
+import EtfList from "../../src/components/EtfList";
+import PortfolioSection from "../../src/components/PortfolioSection";
+import SwapSection from "../../src/components/SwapSection";
+import Icon from "../../src/components/Icon";
 
 const Home: FC = () => {
-  const { ready, authenticated, user } = usePrivy()
+  const { ready, authenticated, user } = usePrivy();
 
-  const isLoggedIn = ready && authenticated
+  const isLoggedIn = ready && authenticated;
 
   const userLabel =
-    user?.email && typeof user.email === 'object'
+    user?.email && typeof user.email === "object"
       ? user.email.address
-      : user?.wallet?.address ?? 'User'
+      : (user?.wallet?.address ?? "User");
 
   return (
     <div className="flex flex-1 flex-col px-6 py-8">
       {isLoggedIn ? (
         <div className="mx-auto w-full max-w-6xl">
-          {/* Header */}
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                ETF Marketplace
-              </h1>
-              <p className="mt-1 text-sm text-muted">
-                Browse and trade xStock ETFs across multiple chains.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-              </span>
-              <span className="max-w-[12rem] truncate text-sm font-medium text-foreground">
-                {userLabel}
-              </span>
-            </div>
-          </div>
-
           {/* Portfolio + Swap XStack */}
           <div className="mb-8 flex flex-col gap-8 lg:flex-row lg:items-stretch">
             <div className="flex-1 min-w-0 h-full">
@@ -52,6 +31,18 @@ const Home: FC = () => {
           </div>
 
           {/* ETF Grid */}
+          {/* Header */}
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                ETF Marketplace
+              </h1>
+              <p className="mt-1 text-sm text-muted">
+                Browse and trade xStock ETFs across multiple chains.
+              </p>
+            </div>
+          </div>
+
           <EtfList />
         </div>
       ) : (
@@ -69,8 +60,8 @@ const Home: FC = () => {
                   Wallet Utils
                 </h1>
                 <p className="max-w-[16rem] text-sm leading-relaxed text-muted">
-                  Connect your wallet to execute transactions securely across EVM
-                  and Solana networks.
+                  Connect your wallet to execute transactions securely across
+                  EVM and Solana networks.
                 </p>
               </div>
 
@@ -88,7 +79,7 @@ const Home: FC = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
