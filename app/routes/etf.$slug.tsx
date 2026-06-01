@@ -67,6 +67,8 @@ const EtfDetail: FC = () => {
   } = useExecuteTransaction({
     onSuccess: (result) => {
       console.log("Swap succeeded:", result);
+      // clean inputs
+      setFromToken(undefined);
     },
     onError: (error) => {
       console.error("Swap failed:", error);
@@ -81,15 +83,9 @@ const EtfDetail: FC = () => {
     const provider: "safe" | "eoa" =
       walletType === "smart_wallet" ? "safe" : "eoa";
     const builtTx = buildTx(
-      [
-        {
-          type: "swap",
-          swapParams,
-          txs: quote.txs,
-          chainId: swapParams.chainIdFrom,
-        },
-      ],
+      [{ type: "swap", swapParams, txs: quote.txs }],
       provider,
+      swapParams.chainIdFrom,
     );
 
     void executeTransaction(builtTx);

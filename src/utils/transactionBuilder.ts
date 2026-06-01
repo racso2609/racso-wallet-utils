@@ -1,63 +1,63 @@
-import type { SwapParams, SwapTransaction } from '../services/swap.types'
+import type { SwapParams, SwapTransaction } from "../services/swap.types";
 
 export interface EoaTransaction {
-  to: string
-  value: bigint
-  data?: string
-  chainId?: number
+  to: string;
+  value: bigint;
+  data?: string;
 }
 
-export type SolanaTransaction = Uint8Array
+export type SolanaTransaction = Uint8Array;
 
 export interface BuiltSafeTransaction {
-  provider: 'safe'
-  txs: EoaTransaction[]
+  provider: "safe";
+  txs: EoaTransaction[];
+  chainId: number;
 }
 
 export interface BuiltEoaTransaction {
-  provider: 'eoa'
-  txs: EoaTransaction[]
+  provider: "eoa";
+  txs: EoaTransaction[];
+  chainId: number;
 }
 
 export interface BuiltSolanaTransaction {
-  provider: 'solana'
-  txs: SolanaTransaction[]
+  provider: "solana";
+  txs: SolanaTransaction[];
 }
 
 export type BuiltTransaction =
   | BuiltSafeTransaction
   | BuiltEoaTransaction
-  | BuiltSolanaTransaction
+  | BuiltSolanaTransaction;
 
 export interface SendAction {
-  type: 'send'
-  token: string
-  from: string
-  to: string
-  amount: bigint
-  chain: number
+  type: "send";
+  token: string;
+  from: string;
+  to: string;
+  amount: bigint;
+  chain: number;
 }
 
 export interface SwapAction {
-  type: 'swap'
-  swapParams: SwapParams
-  txs: SwapTransaction[]
-  chainId: number
+  type: "swap";
+  swapParams: SwapParams;
+  txs: SwapTransaction[];
 }
 
-export type Action = SendAction | SwapAction
+export type Action = SendAction | SwapAction;
 
-export const NATIVE_TOKEN = '0x0000000000000000000000000000000000000000'
+export const NATIVE_TOKEN = "0x0000000000000000000000000000000000000000";
 
 export function isNativeToken(token: string): boolean {
-  return token.toLowerCase() === NATIVE_TOKEN.toLowerCase()
+  return token.toLowerCase() === NATIVE_TOKEN.toLowerCase();
 }
 
 export function encodeErc20Transfer(to: string, amount: bigint): string {
-  const selector = '0xa9059cbb'
-  const paddedTo = to.toLowerCase().slice(2).padStart(64, '0')
-  const paddedAmount = amount.toString(16).padStart(64, '0')
-  return selector + paddedTo + paddedAmount
+  const selector = "0xa9059cbb";
+  const paddedTo = to.toLowerCase().slice(2).padStart(64, "0");
+  const paddedAmount = amount.toString(16).padStart(64, "0");
+  return selector + paddedTo + paddedAmount;
 }
 
 function buildSendTransactions(action: SendAction): EoaTransaction[] {
@@ -66,10 +66,10 @@ function buildSendTransactions(action: SendAction): EoaTransaction[] {
       {
         to: action.to,
         value: action.amount,
-        data: '0x',
+        data: "0x",
         chainId: action.chain,
       },
-    ]
+    ];
   }
 
   return [
@@ -79,7 +79,7 @@ function buildSendTransactions(action: SendAction): EoaTransaction[] {
       data: encodeErc20Transfer(action.to, action.amount),
       chainId: action.chain,
     },
-  ]
+  ];
 }
 
 function buildSwapTransactions(action: SwapAction): EoaTransaction[] {
@@ -87,22 +87,31 @@ function buildSwapTransactions(action: SwapAction): EoaTransaction[] {
     to: tx.to,
     value: tx.value,
     data: tx.data,
-    chainId: action.chainId,
-  }))
+  }));
 }
 
-export function buildTransaction(actions: Action[], provider: 'safe' | 'eoa' = 'safe'): BuiltTransaction {
+export function buildTransaction(
+  actions: Action[],
+  provider: "safe" | "eoa" = "safe",
+  chainId?: number,
+): BuiltTransaction {
   if (actions.length === 0) {
-    throw new Error('No actions provided')
+    throw new Error("No actions provided");
   }
 
-  const txs = actions.flatMap((action) => {
-    if (action.type === 'send') return buildSendTransactions(action)
-    return buildSwapTransactions(action)
-  })
+  let txs = actions.flatMap((action) => {
+    if (action.type === "send") return buildSendTransactions(action);
+    return buildSwapTransactions(action);
+  });
 
-  if (provider === 'safe') {
-    return { provider: 'safe', txs }
+  if (chainId === undefined) {
+    throw new Error("chainId is required");
   }
-  return { provider: 'eoa', txs }
+
+  txs = txs.map((tx) => ({ ...tx, chainId }));
+
+  if (provider === "safe") {
+    return { provider: "safe", txs, chainId };
+  }
+  return { provider: "eoa", txs, chainId };
 }
