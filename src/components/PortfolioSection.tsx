@@ -24,7 +24,7 @@ export const PortfolioSection: FC = () => {
   }
 
   return (
-    <div className="mb-8 space-y-4">
+    <div className="space-y-4">
       {/* Total Value Card */}
       <div className="rounded-2xl border border-border bg-gradient-to-br from-card to-card/50 p-6 shadow-lg shadow-primary/5 backdrop-blur-xl">
         <div className="flex items-center justify-between">
@@ -42,14 +42,14 @@ export const PortfolioSection: FC = () => {
         </div>
       </div>
 
-      {/* Masonry Grid */}
-      <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 gap-y-0.5">
+      {/* Horizontal Scrollable Token List */}
+      <div className="flex gap-3 overflow-x-auto pb-2">
         {tokens
           .filter((t) => BigInt(t.balance.raw) > 0n)
           .map((token) => (
             <div
               key={`${String(token.chainId)}-${token.address}`}
-              className="flex-1 flex"
+              className="w-56 shrink-0"
             >
               <TokenItem token={token} type="portfolio" />
             </div>

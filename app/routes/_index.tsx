@@ -3,6 +3,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import LoginButton from '../../src/components/LoginButton'
 import EtfList from '../../src/components/EtfList'
 import PortfolioSection from '../../src/components/PortfolioSection'
+import SwapSection from '../../src/components/SwapSection'
 import Icon from '../../src/components/Icon'
 
 const Home: FC = () => {
@@ -40,8 +41,15 @@ const Home: FC = () => {
             </div>
           </div>
 
-          {/* Portfolio Section */}
-          <PortfolioSection />
+          {/* Portfolio + Swap XStack */}
+          <div className="mb-8 flex flex-col gap-8 lg:flex-row">
+            <div className="flex-1 min-w-0">
+              <PortfolioSection />
+            </div>
+            <div className="flex-1 min-w-0">
+              <SwapSection />
+            </div>
+          </div>
 
           {/* ETF Grid */}
           <EtfList />
