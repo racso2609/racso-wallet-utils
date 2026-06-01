@@ -150,8 +150,7 @@ const EtfDetail: FC = () => {
           {/* Right: Swap Panel */}
           <div className="flex h-full">
             <SwapSection
-              fixedToken={etfToken ?? undefined}
-              fixedTokenSide="buy"
+              toToken={etfToken ?? undefined}
               onSuccess={() => {
                 console.log("ETF purchase succeeded");
               }}
