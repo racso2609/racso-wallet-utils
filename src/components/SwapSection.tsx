@@ -90,6 +90,7 @@ export const SwapSection: FC = () => {
           toToken={toToken}
           toAmount={toAmount}
           isSwapping={txLoading}
+          actionLabel="Swap"
           onFromTokenChange={handleFromTokenChange}
           onToTokenChange={handleToTokenChange}
           onFromAmountChange={handleFromAmountChange}

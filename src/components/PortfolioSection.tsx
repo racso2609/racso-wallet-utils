@@ -42,14 +42,14 @@ export const PortfolioSection: FC = () => {
         </div>
       </div>
 
-      {/* Horizontal Scrollable Token List */}
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      {/* Masonry Token Grid */}
+      <div className="columns-2 gap-3">
         {tokens
           .filter((t) => BigInt(t.balance.raw) > 0n)
           .map((token) => (
             <div
               key={`${String(token.chainId)}-${token.address}`}
-              className="w-56 shrink-0"
+              className="break-inside-avoid mb-3"
             >
               <TokenItem token={token} type="portfolio" />
             </div>
