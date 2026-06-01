@@ -152,11 +152,13 @@ const EtfDetail: FC = () => {
             <div className="w-full rounded-2xl border border-border bg-card/80 p-6 shadow-lg shadow-primary/5 backdrop-blur-xl sm:p-8">
               <div className="mb-4 flex items-center gap-2">
                 <Icon name="arrow-right" size={16} className="rotate-90 text-primary" />
-                <h2 className="text-sm font-semibold text-foreground">Purchase {product.symbol}</h2>
+                <h2 className="text-sm font-semibold text-foreground">
+                  {etfToken ? `Trade ${etfToken.symbol}` : "Trade"}
+                </h2>
               </div>
               <SwapSection
-                toToken={etfToken ?? undefined}
-                actionLabel="Buy"
+                fixedToken={etfToken ?? undefined}
+                fixedTokenSide="buy"
                 onSuccess={() => {
                   console.log("ETF purchase succeeded");
                 }}

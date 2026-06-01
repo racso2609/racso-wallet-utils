@@ -8,9 +8,11 @@ import { formatUsd } from "../utils/formatters";
 import type { TokenInfo } from "../types/token";
 
 export interface SwapSectionProps {
-  /** Pre-selected destination token (e.g. ETF). When provided, the buy side is read-only. */
-  toToken?: TokenInfo;
-  /** Button text — defaults to "Swap" */
+  /** Token that stays fixed when toggling (e.g. ETF). When provided, toggle moves it between buy/sell. */
+  fixedToken?: TokenInfo;
+  /** Which side the fixed token starts on. Defaults to "buy" (fixed token is destination). */
+  fixedTokenSide?: "buy" | "sell";
+  /** Overrides the action button text. When omitted, defaults to "Buy"/"Sell" with fixed token, or "Swap" without. */
   actionLabel?: string;
   /** Called when a swap succeeds */
   onSuccess?: () => void;
@@ -19,21 +21,21 @@ export interface SwapSectionProps {
 }
 
 export const SwapSection: FC<SwapSectionProps> = ({
-  toToken: fixedToToken,
-  actionLabel = "Swap",
+  fixedToken,
+  fixedTokenSide = "buy",
+  actionLabel: actionLabelProp,
   onSuccess,
   onError,
 }) => {
   const [activeWallet] = useAtom(activeWalletAtom);
   const wallets = useAtomValue(walletsAtom);
 
-  const [fromToken, setFromToken] = useState<TokenInfo | undefined>(undefined);
-  const [userToToken, setUserToToken] = useState<TokenInfo | undefined>(
-    undefined,
-  );
+  const [freeToken, setFreeToken] = useState<TokenInfo | undefined>(undefined);
+  const [mode, setMode] = useState<"buy" | "sell">(fixedTokenSide);
   const [fromAmount, setFromAmount] = useState("");
 
-  const toToken = fixedToToken ?? userToToken;
+  const fromToken = fixedToken ? (mode === "buy" ? freeToken : fixedToken) : undefined;
+  const toToken = fixedToken ? (mode === "buy" ? fixedToken : freeToken) : undefined;
 
   const swapParams = useMemo(() => {
     if (!fromToken || !toToken || !fromAmount) return null;
@@ -75,7 +77,11 @@ export const SwapSection: FC<SwapSectionProps> = ({
 
     const { chainType, walletType } = activeWalletInfo;
     const provider: "safe" | "eoa" | "solana" =
-      chainType === "solana" ? "solana" : walletType === "smart_wallet" ? "safe" : "eoa";
+      chainType === "solana"
+        ? "solana"
+        : walletType === "smart_wallet"
+          ? "safe"
+          : "eoa";
 
     const builtTx = buildTx(
       [{ type: "swap", swapParams, txs: quote.txs }],
@@ -86,27 +92,45 @@ export const SwapSection: FC<SwapSectionProps> = ({
     void executeTransaction(builtTx);
   }, [quote, swapParams, activeWalletInfo, buildTx, executeTransaction]);
 
-  const handleFromTokenChange = useCallback((token: TokenInfo) => {
-    setFromToken(token);
-  }, []);
+  const handleFromTokenChange = useCallback(
+    (token: TokenInfo) => {
+      if (fixedToken && mode === "buy") {
+        setFreeToken(token);
+      } else {
+        // free swap or sell mode — from side is free
+        setFreeToken(token);
+      }
+    },
+    [fixedToken, mode],
+  );
 
-  const handleToTokenChange = useCallback((token: TokenInfo) => {
-    setUserToToken(token);
-  }, []);
+  const handleToTokenChange = useCallback(
+    (token: TokenInfo) => {
+      if (fixedToken && mode === "sell") {
+        setFreeToken(token);
+      } else {
+        // free swap or buy mode — to side is free
+        setFreeToken(token);
+      }
+    },
+    [fixedToken, mode],
+  );
 
   const handleFromAmountChange = useCallback((value: string) => {
     setFromAmount(value);
   }, []);
 
   const handleToggle = useCallback(() => {
-    setFromToken(toToken);
-    if (!fixedToToken) {
-      setUserToToken(fromToken);
-    }
+    setMode((prev) => (prev === "buy" ? "sell" : "buy"));
+    setFreeToken(undefined);
     setFromAmount("");
-  }, [fromToken, toToken, fixedToToken]);
+  }, []);
 
   const toAmount = quote?.amountToReceive;
+
+  const isFreeSwap = !fixedToken;
+  const actionLabel =
+    actionLabelProp ?? (fixedToken ? (mode === "buy" ? "Buy" : "Sell") : "Swap");
 
   return (
     <div className="space-y-4 h-full flex flex-col">
@@ -118,10 +142,10 @@ export const SwapSection: FC<SwapSectionProps> = ({
           isSwapping={txLoading}
           actionLabel={actionLabel}
           onFromTokenChange={handleFromTokenChange}
-          onToTokenChange={fixedToToken ? undefined : handleToTokenChange}
+          onToTokenChange={isFreeSwap ? handleToTokenChange : undefined}
           onFromAmountChange={handleFromAmountChange}
           onSwap={handleSwap}
-          onToggle={fixedToToken ? undefined : handleToggle}
+          onToggle={handleToggle}
         />
 
         {quoteLoading && !quote ? (
