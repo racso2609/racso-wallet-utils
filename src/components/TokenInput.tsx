@@ -8,14 +8,14 @@ import { useTokenBalance } from "../hooks/usePortfolio";
 import { useTokenPrice } from "../hooks/useTokenPrice";
 import { activeWalletAtom } from "../storages/activeWallet";
 
-const EVM_CHAINS: ChainId[] = [42161, 56, 8453]
-const SOLANA_CHAINS: ChainId[] = ['solana-mainnet-beta']
+const EVM_CHAINS: ChainId[] = [42161, 56, 8453];
+const SOLANA_CHAINS: ChainId[] = ["solana-mainnet-beta"];
 
 function formatUsd(value: number): string {
-  if (value === 0) return "$0.00"
+  if (value === 0) return "$0.00";
   return value >= 0.01
     ? `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    : `$${value.toPrecision(4)}`
+    : `$${value.toPrecision(4)}`;
 }
 
 interface TokenInputProps {
@@ -48,9 +48,9 @@ export const TokenInput: FC<TokenInputProps> = ({
   const [activeWallet] = useAtom(activeWalletAtom);
 
   const allowedChains = useMemo<ChainId[] | undefined>(() => {
-    if (type !== "from" || activeWallet === null) return undefined
-    return activeWallet.startsWith("0x") ? EVM_CHAINS : SOLANA_CHAINS
-  }, [type, activeWallet])
+    if (type !== "from" || activeWallet === null) return undefined;
+    return activeWallet.startsWith("0x") ? EVM_CHAINS : SOLANA_CHAINS;
+  }, [type, activeWallet]);
 
   const { data: fetchedBalance } = useTokenBalance(
     undefined,
@@ -113,13 +113,15 @@ export const TokenInput: FC<TokenInputProps> = ({
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-medium text-muted">{label}</span>
         <span className="text-xs text-muted">
-          {isSelected && <>
-            Balance:{" "}
-            <span className="font-medium text-foreground">{balance}</span>
-            {usdBalance !== null && (
-              <span className="ml-1 text-muted">({usdBalance})</span>
-            )}
-          </>}
+          {isSelected && (
+            <>
+              Balance:{" "}
+              <span className="font-medium text-foreground">{balance}</span>
+              {usdBalance !== null && (
+                <span className="ml-1 text-muted">({usdBalance})</span>
+              )}
+            </>
+          )}
         </span>
       </div>
 
@@ -176,9 +178,7 @@ export const TokenInput: FC<TokenInputProps> = ({
       )}
 
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-xs text-muted">
-          {usdValue ?? <>&nbsp;</>}
-        </span>
+        <span className="text-xs text-muted">{usdValue ?? <>&nbsp;</>}</span>
         {isSelected && Number(balance) > 0 && type === "from" && (
           <button
             type="button"

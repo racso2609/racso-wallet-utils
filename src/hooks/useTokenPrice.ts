@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAtom } from "jotai";
 import { tokenPricesAtom, pendingPricesAtom } from "../storages/tokenPrices";
 import { getTokenPriceBySymbol } from "../services/AlchemyService";
@@ -6,18 +7,25 @@ export function useTokenPrice(symbol?: string): number | undefined {
   const [prices, setPrices] = useAtom(tokenPricesAtom);
   const [pending, setPending] = useAtom(pendingPricesAtom);
 
-  if (symbol === undefined) return undefined;
+  const key = symbol?.toUpperCase();
 
-  const key = symbol.toUpperCase();
-  if (key in prices) return prices[key] ?? undefined;
+  useEffect(() => {
+    if (key === undefined) return;
+    if (key in prices) return;
+    if (pending[key]) return;
 
-  if (!pending[key]) {
     setPending((prev) => ({ ...prev, [key]: true }));
-    void getTokenPriceBySymbol(key).then((price) => {
-      setPrices((prev) => ({ ...prev, [key]: price }));
-      setPending((prev) => ({ ...prev, [key]: false }));
-    });
-  }
+    void getTokenPriceBySymbol(key)
+      .then((price) => {
+        setPrices((prev) => ({ ...prev, [key]: price }));
+      })
+      .finally(() => {
+        setPending((prev) => ({ ...prev, [key]: false }));
+      });
+  }, [key, prices, pending, setPrices, setPending]);
+
+  if (key === undefined) return undefined;
+  if (key in prices) return prices[key] ?? undefined;
 
   return undefined;
 }
