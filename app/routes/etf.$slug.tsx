@@ -73,7 +73,7 @@ const EtfDetail: FC = () => {
           <div className="flex flex-col gap-6">
             {/* Header Card */}
             <div className="rounded-2xl border border-border bg-card/80 p-6 shadow-lg shadow-primary/5 backdrop-blur-xl sm:p-8">
-              <div className="flex items-start gap-5">
+              <div className="flex flex-col items-start gap-4 sm:flex-row sm:gap-5">
                 <img
                   src={product.iconUrl}
                   alt={product.name}
@@ -106,14 +106,14 @@ const EtfDetail: FC = () => {
                 return (
                   <div
                     key={chain}
-                    className={`flex items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${
+                    className={`flex flex-col items-start justify-between gap-3 rounded-xl border px-4 py-3 transition-colors sm:flex-row sm:items-center sm:gap-4 ${
                       isSelected
                         ? "border-primary/50 bg-primary/5"
                         : "border-border/50 bg-card/60"
                     }`}
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                         <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                           {chain}
                         </span>
